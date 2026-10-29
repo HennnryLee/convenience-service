@@ -5,8 +5,7 @@
   2. 便于测试：单元测试可为每个用例创建一个全新的、隔离的应用实例；
   3. 延迟绑定：扩展对象在 extensions.py 中定义，在此处才与 app 绑定。
 
-【实验一】当前仅注册 main 蓝图（首页骨架），
-后续实验按增量方式在此追加蓝图注册（见 Git 提交历史）。
+蓝图注册随实验增量推进：实验一只注册 main；实验四接入全部业务模块。
 """
 from flask import Flask
 
@@ -22,22 +21,58 @@ def create_app(config_name="development"):
 
     # 1) 绑定扩展
     db.init_app(app)
+    login_manager.init_app(app)
     csrf.init_app(app)
-    # 注：login_manager（会话与登录状态）在实验四"用户交互构造"增量接入，
-    #     届时需同时注册 user_loader 回调（Flask-Login 强制要求）。
 
     # 2) 注册模型（保证 db.create_all 能发现全部数据表）
     from . import models  # noqa: F401
 
     # 3) 注册蓝图（按业务模块划分，体现模块化构造）
+    from .modules.admin import admin_bp
+    from .modules.announcements import announcements_bp
+    from .modules.appointments import appointments_bp
+    from .modules.auth import auth_bp
+    from .modules.feedback import feedback_bp
     from .modules.main import main_bp
+    from .modules.services import services_bp
 
     app.register_blueprint(main_bp)
+    app.register_blueprint(auth_bp, url_prefix="/auth")
+    app.register_blueprint(services_bp, url_prefix="/services")
+    app.register_blueprint(appointments_bp, url_prefix="/appointments")
+    app.register_blueprint(announcements_bp, url_prefix="/announcements")
+    app.register_blueprint(feedback_bp, url_prefix="/feedback")
+    app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    # 3) 错误页
+    # 4) 用户加载回调与模板全局变量
+    _register_login(app)
+    _register_template_globals(app)
+
+    # 5) 错误页
     _register_error_handlers(app)
 
     return app
+
+
+def _register_login(app):
+    """Flask-Login 用户加载回调（会话管理的必要配置）。"""
+    from .models.user import User
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return db.session.get(User, int(user_id))
+
+
+def _register_template_globals(app):
+    """模板全局函数：状态/分类文案与状态机查表，避免在模板中写判断逻辑。"""
+    from .services.appointment_rules import next_statuses
+    from .utils.constants import category_text, status_text
+
+    app.jinja_env.globals.update(
+        status_text=status_text,
+        category_text=category_text,
+        allowed_transitions=next_statuses,
+    )
 
 
 def _register_error_handlers(app):

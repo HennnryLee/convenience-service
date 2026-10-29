@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, render_submit %}
+{% block title %}在线预约 · {{ service.name }}{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>在线预约</h2>
+    <p class="muted">服务：{{ service.name }} · 地点：{{ service.address }} · 费用：¥{{ service.price }}</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.appointment_date) }}
+        {{ render_field(form.time_slot) }}
+        {{ render_field(form.contact_name) }}
+        {{ render_field(form.contact_phone) }}
+        {{ render_field(form.remark) }}
+        <div class="form-actions">
+            {{ render_submit(form.submit) }}
+            <a class="btn btn-outline" href="{{ url_for('services.detail', service_id=service.id) }}">返回详情</a>
+        </div>
+    </form>
+    <p class="muted">提示：仅可预约今天起 30 天内的服务；同一时段每人限预约一次；名额约满后将无法提交。</p>
+</section>
+{% endblock %}

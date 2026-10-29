@@ -13,11 +13,25 @@
         <a class="logo" href="{{ url_for('main.index') }}">便民服务平台</a>
         <nav class="nav">
             <a href="{{ url_for('main.index') }}">首页</a>
-            <a href="{{ url_for('main.about') }}">关于</a>
-            {# 实验四（用户交互构造）增量接入：服务查询/公告/我的预约/我的评价/后台管理 #}
+            <a href="{{ url_for('services.list_services') }}">服务查询</a>
+            <a href="{{ url_for('announcements.list_announcements') }}">公告资讯</a>
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('appointments.my_appointments') }}">我的预约</a>
+                <a href="{{ url_for('feedback.my_feedback') }}">我的评价</a>
+                {% if current_user.is_admin %}
+                    <a href="{{ url_for('admin.dashboard') }}">后台管理</a>
+                {% endif %}
+            {% endif %}
         </nav>
         <div class="user-area">
-            {# 实验四（用户交互构造）增量接入：登录/注册/个人中心/退出 #}
+            {% if current_user.is_authenticated %}
+                <span class="who">你好，{{ current_user.username }}</span>
+                <a class="btn btn-sm" href="{{ url_for('auth.profile') }}">个人中心</a>
+                <a class="btn btn-sm btn-outline" href="{{ url_for('auth.logout') }}">退出</a>
+            {% else %}
+                <a class="btn btn-sm" href="{{ url_for('auth.login') }}">登录</a>
+                <a class="btn btn-sm btn-outline" href="{{ url_for('auth.register') }}">注册</a>
+            {% endif %}
         </div>
     </div>
 </header>

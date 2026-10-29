@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, render_submit %}
+{% block title %}个人中心{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>个人中心</h2>
+    <p class="muted">账号：{{ current_user.username }} · 角色：{{ current_user.role_text }}</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.real_name) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.phone) }}
+        <div class="form-actions">{{ render_submit(form.submit) }}</div>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, render_submit %}
+{% block title %}用户登录{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>用户登录</h2>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.login) }}
+        {{ render_field(form.password) }}
+        <div class="form-group">
+            <label>{{ form.remember }} {{ form.remember.label.text }}</label>
+        </div>
+        <div class="form-actions">
+            {{ render_submit(form.submit) }}
+            <a class="btn btn-outline" href="{{ url_for('auth.register') }}">注册新账号</a>
+        </div>
+    </form>
+    <p class="muted">演示账号：管理员 admin / Admin@123，普通用户 zhangsan / User@123</p>
+</section>
+{% endblock %}

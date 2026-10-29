@@ -4,13 +4,19 @@
 """
 from flask import Blueprint, render_template
 
+from app.repositories import AnnouncementRepository, ServiceRepository
+
 main_bp = Blueprint("main", __name__)
 
 
 @main_bp.route("/")
 def index():
-    """站点首页（实验一阶段为门户骨架，后续增量接入各业务入口）。"""
-    return render_template("main/index.html")
+    """站点首页：展示热门服务入口与最新公告。"""
+    hot_services = ServiceRepository.list_online(limit=3)
+    announcements = AnnouncementRepository.latest(limit=5)
+    return render_template(
+        "main/index.html", hot_services=hot_services, announcements=announcements
+    )
 
 
 @main_bp.route("/about")

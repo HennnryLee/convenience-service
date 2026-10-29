@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, render_submit %}
+{% block title %}{{ '编辑服务' if service else '新增服务' }}{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>{{ '编辑服务' if service else '新增服务' }}</h2>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.name) }}
+        {{ render_field(form.category) }}
+        {{ render_field(form.description) }}
+        {{ render_field(form.address) }}
+        {{ render_field(form.price) }}
+        {{ render_field(form.duration_minutes) }}
+        {{ render_field(form.daily_capacity) }}
+        {{ render_field(form.status) }}
+        <div class="form-actions">
+            {{ render_submit(form.submit) }}
+            <a class="btn btn-outline" href="{{ url_for('admin.services') }}">取消</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

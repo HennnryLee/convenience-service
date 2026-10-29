@@ -5,21 +5,39 @@
 <section class="hero">
     <h1>让便民服务触手可及</h1>
     <p>在线查询政务、生活、医疗、教育、维修等便民服务，一键预约，省心办理。</p>
-    <p class="muted">（实验一增量：项目骨架已就绪，服务查询与在线预约将在后续迭代接入。）</p>
+    <div class="hero-actions">
+        <a class="btn btn-primary" href="{{ url_for('services.list_services') }}">立即查询服务</a>
+        <a class="btn btn-outline" href="{{ url_for('announcements.list_announcements') }}">查看公告</a>
+    </div>
 </section>
 
 <section class="card-grid">
     <div class="card">
         <h3>服务查询</h3>
-        <p>按分类浏览或关键词搜索，快速定位需要的服务事项。（迭代 2 接入）</p>
+        <p>按分类浏览或关键词搜索，快速定位需要的服务事项。</p>
+        <a href="{{ url_for('services.list_services') }}">进入查询 &rarr;</a>
     </div>
     <div class="card">
         <h3>在线预约</h3>
-        <p>选择服务与时段，填写联系信息即可提交预约，进度可追踪。（迭代 2 接入）</p>
+        <p>选择服务与时段，填写联系信息即可提交预约，进度可追踪。</p>
+        <a href="{{ url_for('services.list_services') }}">去预约 &rarr;</a>
     </div>
     <div class="card">
         <h3>公告资讯</h3>
-        <p>获取最新服务调整、办事提醒与政策通知。（迭代 3 接入）</p>
+        <p>获取最新服务调整、办事提醒与政策通知。</p>
+        <a href="{{ url_for('announcements.list_announcements') }}">查看公告 &rarr;</a>
     </div>
 </section>
+
+{% if announcements %}
+<section class="panel">
+    <h3>最新公告</h3>
+    <ul>
+        {% for ann in announcements %}
+            <li><a href="{{ url_for('announcements.detail', announcement_id=ann.id) }}">{{ ann.title }}</a>
+                <span class="muted">{{ ann.created_at.strftime('%Y-%m-%d') }}</span></li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %}
 {% endblock %}

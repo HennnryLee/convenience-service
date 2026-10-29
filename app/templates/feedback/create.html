@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_radio, render_submit %}
+{% block title %}提交评价{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>提交评价</h2>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        <div class="form-group">
+            {{ form.appointment_id.label }}
+            {{ form.appointment_id(class="form-control") }}
+            {% if form.appointment_id.errors %}
+                <div class="field-errors">{% for e in form.appointment_id.errors %}<div>{{ e }}</div>{% endfor %}</div>
+            {% endif %}
+        </div>
+        {{ render_radio(form.rating) }}
+        <div class="form-group">
+            {{ form.content.label }}
+            {{ form.content(class="form-control", rows="4") }}
+        </div>
+        <div class="form-actions">{{ render_submit(form.submit) }}</div>
+    </form>
+</section>
+{% endblock %}

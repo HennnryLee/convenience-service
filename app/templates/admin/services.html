@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}服务管理{% endblock %}
+
+{% block content %}
+<h2>服务管理</h2>
+<p><a class="btn btn-sm btn-primary" href="{{ url_for('admin.edit_service') }}">新增服务</a></p>
+<table class="grid">
+    <tr><th>编号</th><th>名称</th><th>分类</th><th>费用</th><th>容量</th><th>状态</th><th>操作</th></tr>
+    {% for service in pagination.items %}
+        <tr>
+            <td>{{ service.id }}</td>
+            <td>{{ service.name }}</td>
+            <td>{{ category_text(service.category) }}</td>
+            <td>¥{{ service.price }}</td>
+            <td>{{ service.daily_capacity }}</td>
+            <td><span class="badge badge-{{ service.status }}">{{ '上架' if service.is_online else '下架' }}</span></td>
+            <td>
+                <a class="btn btn-sm" href="{{ url_for('admin.edit_service', service_id=service.id) }}">编辑</a>
+                <form method="post" action="{{ url_for('admin.toggle_service', service_id=service.id) }}" style="display:inline">
+                    <button class="btn btn-sm btn-outline" type="submit">{{ '下架' if service.is_online else '上架' }}</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'admin.services') }}
+{% endblock %}

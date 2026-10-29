@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}服务查询{% endblock %}
+
+{% block content %}
+<h2>服务查询</h2>
+
+<form class="search-bar" method="get" action="{{ url_for('services.list_services') }}" data-no-loading="true">
+    {{ form.keyword(class="form-control", placeholder="输入服务名称或关键词") }}
+    {{ form.category(class="form-control") }}
+    {{ form.sort(class="form-control") }}
+    <button class="btn btn-primary" type="submit">搜索</button>
+</form>
+
+<div class="category-nav">
+    <a class="badge {% if not form.category.data %}badge-online{% endif %}"
+       href="{{ url_for('services.list_services', keyword=keyword) }}">全部</a>
+    {% for c in categories %}
+        <a class="badge {% if form.category.data == c.code %}badge-online{% endif %}"
+           href="{{ url_for('services.list_services', category=c.code, keyword=keyword) }}">
+            {{ c.text }}（{{ c.count }}）
+        </a>
+    {% endfor %}
+</div>
+
+{% if pagination and pagination.items %}
+    <section class="card-grid">
+        {% for service in pagination.items %}
+            <div class="card">
+                <div class="service-item">
+                    <h3>{{ service.name }}</h3>
+                    <span class="price">¥{{ service.price }}</span>
+                </div>
+                <p class="muted">{{ category_text(service.category) }} · 约 {{ service.duration_minutes }} 分钟 · 每时段 {{ service.daily_capacity }} 人</p>
+                <p>{{ service.summary if service.summary else service.description[:50] }}</p>
+                <a href="{{ url_for('services.detail', service_id=service.id) }}">查看详情 &rarr;</a>
+            </div>
+        {% endfor %}
+    </section>
+    {{ pagination_widget(pagination, 'services.list_services', {'keyword': keyword, 'category': form.category.data, 'sort': form.sort.data}) }}
+{% else %}
+    <div class="panel"><p>暂无服务数据。</p></div>
+{% endif %}
+{% endblock %}

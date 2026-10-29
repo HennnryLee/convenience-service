@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget, status_badge %}
+{% block title %}我的预约{% endblock %}
+
+{% block content %}
+<h2>我的预约</h2>
+<div class="category-nav">
+    {% for code, text in [('', '全部'), ('pending', '待确认'), ('confirmed', '已确认'), ('completed', '已完成'), ('cancelled', '已取消')] %}
+        <a class="badge {% if status == code %}badge-online{% endif %}" href="{{ url_for('appointments.my_appointments', status=code) }}">{{ text }}</a>
+    {% endfor %}
+</div>
+
+{% if pagination.items %}
+<table class="grid">
+    <tr><th>编号</th><th>服务</th><th>日期</th><th>时段</th><th>联系人</th><th>状态</th><th>操作</th></tr>
+    {% for appt in pagination.items %}
+        <tr>
+            <td>#{{ appt.id }}</td>
+            <td>{{ appt.service.name }}</td>
+            <td>{{ appt.appointment_date }}</td>
+            <td>{{ appt.time_slot }}</td>
+            <td>{{ appt.contact_name }}（{{ appt.contact_phone }}）</td>
+            <td>{{ status_badge(appt.status) }}</td>
+            <td>
+                {% if appt.status in ['pending', 'confirmed'] %}
+                    <form method="post" action="{{ url_for('appointments.cancel', appointment_id=appt.id) }}" style="display:inline">
+                        <button class="btn btn-sm btn-danger" type="submit">取消预约</button>
+                    </form>
+                {% else %}
+                    <span class="muted">—</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'appointments.my_appointments', {'status': status or ''}) }}
+{% else %}
+<div class="panel"><p>暂无预约记录，去 <a href="{{ url_for('services.list_services') }}">服务查询</a> 预约吧。</p></div>
+{% endif %}
+{% endblock %}

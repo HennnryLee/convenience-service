@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget, status_badge %}
+{% block title %}预约管理{% endblock %}
+
+{% block content %}
+<h2>预约管理</h2>
+<div class="category-nav">
+    {% for code, text in [('', '全部'), ('pending', '待确认'), ('confirmed', '已确认'), ('completed', '已完成'), ('cancelled', '已取消')] %}
+        <a class="badge {% if status == code %}badge-online{% endif %}" href="{{ url_for('admin.appointments', status=code) }}">{{ text }}</a>
+    {% endfor %}
+</div>
+
+<table class="grid">
+    <tr><th>编号</th><th>用户</th><th>服务</th><th>日期/时段</th><th>状态</th><th>推进状态</th></tr>
+    {% for appt in pagination.items %}
+        <tr>
+            <td>#{{ appt.id }}</td>
+            <td>{{ appt.user.username }}</td>
+            <td>{{ appt.service.name }}</td>
+            <td>{{ appt.appointment_date }} {{ appt.time_slot }}</td>
+            <td>{{ status_badge(appt.status) }}</td>
+            <td>
+                {% if appt.status in ['pending', 'confirmed'] %}
+                    <form method="post" action="{{ url_for('admin.update_appointment_status', appointment_id=appt.id) }}">
+                        <select name="status" class="form-control" style="width:auto;display:inline-block">
+                            {% for s in allowed_transitions(appt.status) %}
+                                <option value="{{ s }}">{{ status_text(s) }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-sm" type="submit">更新</button>
+                    </form>
+                {% else %}
+                    <span class="muted">已结束</span>
+                {% endif %}
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'admin.appointments', {'status': status or ''}) }}
+{% endblock %}

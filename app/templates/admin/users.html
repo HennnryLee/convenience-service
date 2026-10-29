@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}用户管理{% endblock %}
+
+{% block content %}
+<h2>用户管理</h2>
+<form class="search-bar" method="get" action="{{ url_for('admin.users') }}" data-no-loading="true">
+    {{ form.keyword(class="form-control", placeholder="用户名 / 姓名 / 邮箱") }}
+    <button class="btn btn-primary" type="submit">搜索</button>
+</form>
+<table class="grid">
+    <tr><th>编号</th><th>用户名</th><th>姓名</th><th>邮箱</th><th>角色</th><th>状态</th><th>操作</th></tr>
+    {% for user in pagination.items %}
+        <tr>
+            <td>{{ user.id }}</td>
+            <td>{{ user.username }}</td>
+            <td>{{ user.real_name or '—' }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.role_text }}</td>
+            <td><span class="badge {{ 'badge-online' if user.is_active else 'badge-cancelled' }}">{{ '正常' if user.is_active else '已禁用' }}</span></td>
+            <td>
+                <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" style="display:inline">
+                    <button class="btn btn-sm btn-outline" type="submit">{{ '禁用' if user.is_active else '启用' }}</button>
+                </form>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'admin.users') }}
+{% endblock %}

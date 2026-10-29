@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}后台管理 · 概览{% endblock %}
+
+{% block content %}
+<h2>运营概览</h2>
+<div class="stat-grid">
+    <div class="stat"><div class="num">{{ stats.users }}</div><div>注册用户</div></div>
+    <div class="stat"><div class="num">{{ stats.services }}</div><div>在线服务</div></div>
+    <div class="stat"><div class="num">{{ stats.appointments }}</div><div>预约总数</div></div>
+    <div class="stat"><div class="num">{{ stats.pending }}</div><div>待确认预约</div></div>
+    <div class="stat"><div class="num">{{ stats.today }}</div><div>今日预约</div></div>
+    <div class="stat"><div class="num">{{ stats.feedbacks }}</div><div>评价总数</div></div>
+</div>
+
+<section class="panel">
+    <h3>快捷入口</h3>
+    <p>
+        <a class="btn btn-sm" href="{{ url_for('admin.services') }}">服务管理</a>
+        <a class="btn btn-sm" href="{{ url_for('admin.appointments') }}">预约管理</a>
+        <a class="btn btn-sm" href="{{ url_for('admin.users') }}">用户管理</a>
+        <a class="btn btn-sm btn-outline" href="{{ url_for('admin.new_announcement') }}">发布公告</a>
+    </p>
+</section>
+{% endblock %}

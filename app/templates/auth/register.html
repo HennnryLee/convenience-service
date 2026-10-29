@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% from "_macros.html" import render_field, render_submit %}
+{% block title %}用户注册{% endblock %}
+
+{% block content %}
+<section class="panel auth-box">
+    <h2>用户注册</h2>
+    <p class="muted">用户名 3-20 位；密码 8-20 位且必须同时包含字母和数字。</p>
+    <form method="post" novalidate>
+        {{ form.hidden_tag() }}
+        {{ render_field(form.username) }}
+        {{ render_field(form.email) }}
+        {{ render_field(form.phone) }}
+        {{ render_field(form.real_name) }}
+        {{ render_field(form.password) }}
+        {{ render_field(form.confirm) }}
+        <div class="form-actions">
+            {{ render_submit(form.submit) }}
+            <a class="btn btn-outline" href="{{ url_for('auth.login') }}">已有账号，去登录</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

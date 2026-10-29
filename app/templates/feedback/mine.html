@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}我的评价{% endblock %}
+
+{% block content %}
+<h2>我的评价</h2>
+<p><a class="btn btn-sm btn-primary" href="{{ url_for('feedback.create') }}">提交新评价</a></p>
+{% if pagination.items %}
+<table class="grid">
+    <tr><th>服务</th><th>评分</th><th>内容</th><th>时间</th></tr>
+    {% for fb in pagination.items %}
+        <tr>
+            <td>{{ fb.service.name }}</td>
+            <td>{{ fb.rating }} 星 · {{ fb.rating_text }}</td>
+            <td>{{ fb.content or '—' }}</td>
+            <td>{{ fb.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'feedback.my_feedback') }}
+{% else %}
+<div class="panel"><p>你还没有提交过评价。</p></div>
+{% endif %}
+{% endblock %}

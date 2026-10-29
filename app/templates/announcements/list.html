@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}公告资讯{% endblock %}
+
+{% block content %}
+<h2>公告资讯</h2>
+<form class="search-bar" method="get" action="{{ url_for('announcements.list_announcements') }}" data-no-loading="true">
+    {{ form.keyword(class="form-control", placeholder="搜索公告标题或正文") }}
+    <button class="btn btn-primary" type="submit">搜索</button>
+</form>
+
+{% if pagination and pagination.items %}
+    {% for ann in pagination.items %}
+        <div class="card" style="margin-bottom:12px">
+            <h3><a href="{{ url_for('announcements.detail', announcement_id=ann.id) }}">{{ ann.title }}</a></h3>
+            <p class="muted">发布于 {{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p>{{ ann.summary }}</p>
+        </div>
+    {% endfor %}
+    {{ pagination_widget(pagination, 'announcements.list_announcements', {'keyword': keyword}) }}
+{% else %}
+    <div class="panel"><p>暂无公告。</p></div>
+{% endif %}
+{% endblock %}
