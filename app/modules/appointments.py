@@ -2,7 +2,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.extensions import db
+from app.config import Config
 from app.forms import AppointmentForm
 from app.repositories import AppointmentRepository, ServiceRepository
 from app.services.appointment_service import cancel_appointment, create_appointment
@@ -45,7 +45,7 @@ def my_appointments():
     status = request.args.get("status") or None
     page = request.args.get("page", 1, type=int)
     pagination = AppointmentRepository.list_by_user(
-        current_user.id, status=status, page=page, per_page=10
+        current_user.id, status=status, page=page, per_page=Config.USER_ITEMS_PER_PAGE
     )
     return render_template(
         "appointments/mine.html", pagination=pagination, status=status

@@ -4,7 +4,7 @@ from datetime import date
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
-from app.extensions import db
+from app.config import Config
 from app.forms import AnnouncementForm, AppointmentStatusForm, ServiceForm, UserSearchForm
 from app.repositories import (
     AnnouncementRepository,
@@ -17,6 +17,23 @@ from app.services.appointment_service import change_status
 from app.utils.decorators import admin_required
 
 admin_bp = Blueprint("admin", __name__)
+
+PER_PAGE = Config.ADMIN_ITEMS_PER_PAGE
+
+
+def _build_service_payload(form):
+    """重构：提炼函数（Extract Method）—— 把表单到实体的字段映射独立出来，
+    使 edit_service 视图函数只关注流程控制，长度与圈复杂度同时下降。"""
+    return dict(
+        name=form.name.data.strip(),
+        category=form.category.data,
+        description=(form.description.data or "").strip(),
+        address=(form.address.data or "").strip(),
+        price=form.price.data or 0,
+        duration_minutes=form.duration_minutes.data or 30,
+        daily_capacity=form.daily_capacity.data or 5,
+        status=form.status.data,
+    )
 
 
 @admin_bp.before_request
@@ -35,7 +52,7 @@ def dashboard():
         "appointments": AppointmentRepository.count_by_status(),
         "pending": AppointmentRepository.count_by_status("pending"),
         "today": AppointmentRepository.count_by_date(date.today()),
-        "feedbacks": FeedbackRepository.count(),
+        "feedbacks": FeedbackRepository.count_all(),
     }
     return render_template("admin/dashboard.html", stats=stats)
 
@@ -44,7 +61,7 @@ def dashboard():
 @admin_bp.route("/services")
 def services():
     page = request.args.get("page", 1, type=int)
-    pagination = ServiceRepository.search(only_online=False, page=page, per_page=10)
+    pagination = ServiceRepository.search(only_online=False, page=page, per_page=PER_PAGE)
     return render_template("admin/services.html", pagination=pagination)
 
 
@@ -58,16 +75,7 @@ def edit_service(service_id=None):
 
     form = ServiceForm(obj=service)
     if form.validate_on_submit():
-        payload = dict(
-            name=form.name.data.strip(),
-            category=form.category.data,
-            description=(form.description.data or "").strip(),
-            address=(form.address.data or "").strip(),
-            price=form.price.data or 0,
-            duration_minutes=form.duration_minutes.data or 30,
-            daily_capacity=form.daily_capacity.data or 5,
-            status=form.status.data,
-        )
+        payload = _build_service_payload(form)
         if service:
             ServiceRepository.update(service, **payload)
             flash("服务信息已更新。", "success")
@@ -99,7 +107,7 @@ def users():
     form = UserSearchForm(request.args, meta={"csrf": False})
     keyword = (form.keyword.data or "").strip() or None
     page = request.args.get("page", 1, type=int)
-    pagination = UserRepository.search(keyword=keyword, page=page, per_page=10)
+    pagination = UserRepository.search(keyword=keyword, page=page, per_page=PER_PAGE)
     return render_template("admin/users.html", pagination=pagination, form=form)
 
 
@@ -121,7 +129,7 @@ def toggle_user(user_id):
 def appointments():
     status = request.args.get("status") or None
     page = request.args.get("page", 1, type=int)
-    pagination = AppointmentRepository.list_all(status=status, page=page, per_page=10)
+    pagination = AppointmentRepository.list_all(status=status, page=page, per_page=PER_PAGE)
     return render_template("admin/appointments.html", pagination=pagination, status=status)
 
 

@@ -3,19 +3,17 @@ from sqlalchemy import select
 
 from app.extensions import db
 from app.models.announcement import Announcement
+from app.repositories.base import BaseRepository
 
 
-class AnnouncementRepository:
-    @staticmethod
-    def create(title, content, author_id=None, is_published=True):
-        ann = Announcement(title=title, content=content, author_id=author_id, is_published=is_published)
-        db.session.add(ann)
-        db.session.commit()
-        return ann
+class AnnouncementRepository(BaseRepository):
+    model = Announcement
 
-    @staticmethod
-    def get(announcement_id):
-        return db.session.get(Announcement, announcement_id)
+    @classmethod
+    def create(cls, title, content, author_id=None, is_published=True):
+        return cls.add(
+            Announcement(title=title, content=content, author_id=author_id, is_published=is_published)
+        )
 
     @staticmethod
     def search(keyword=None, only_published=True, page=1, per_page=10):
@@ -29,18 +27,6 @@ class AnnouncementRepository:
             )
         stmt = stmt.order_by(Announcement.created_at.desc())
         return db.paginate(stmt, page=page, per_page=per_page, error_out=False)
-
-    @staticmethod
-    def update(announcement, **fields):
-        for key, value in fields.items():
-            setattr(announcement, key, value)
-        db.session.commit()
-        return announcement
-
-    @staticmethod
-    def delete(announcement):
-        db.session.delete(announcement)
-        db.session.commit()
 
     @staticmethod
     def latest(limit=5):

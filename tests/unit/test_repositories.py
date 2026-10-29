@@ -155,7 +155,7 @@ def test_feedback_crud_and_average(app, normal_user, service, appointment):
     assert FeedbackRepository.get_by_appointment(appointment.id) is not None
     assert FeedbackRepository.list_by_user(normal_user.id).total == 1
     assert round(float(FeedbackRepository.average_rating(service.id)), 1) == 4.0
-    assert FeedbackRepository.count() == 1
+    assert FeedbackRepository.count_all() == 1
     db.session.delete(fb)
     db.session.commit()
-    assert FeedbackRepository.count() == 0
+    assert FeedbackRepository.count_all() == 0

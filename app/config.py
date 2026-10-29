@@ -23,8 +23,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_DATABASE_URI = os.environ.get("DATABASE_URL", DEFAULT_SQLITE_URI)
 
-    # 交互相关
-    ITEMS_PER_PAGE = 9              # 列表页分页大小
+    # 交互相关（重构：以常量替换视图中的魔法数字）
+    ITEMS_PER_PAGE = 9              # 服务列表页分页大小
+    USER_ITEMS_PER_PAGE = 10        # 个人中心（我的预约/我的评价）分页大小
+    ADMIN_ITEMS_PER_PAGE = 10       # 后台管理列表分页大小
     MAX_SEARCH_KEYWORD = 50         # 服务/公告搜索关键词最大长度（边界值分析用）
     REMEMBER_COOKIE_DURATION = 3600  # 登录会话有效期（秒）
 

@@ -3,21 +3,23 @@ from sqlalchemy import func, select
 
 from app.extensions import db
 from app.models.feedback import Feedback
+from app.repositories.base import BaseRepository
 
 
-class FeedbackRepository:
-    @staticmethod
-    def create(user_id, service_id, appointment_id, rating, content=None):
-        fb = Feedback(
-            user_id=user_id,
-            service_id=service_id,
-            appointment_id=appointment_id,
-            rating=rating,
-            content=content,
+class FeedbackRepository(BaseRepository):
+    model = Feedback
+
+    @classmethod
+    def create(cls, user_id, service_id, appointment_id, rating, content=None):
+        return cls.add(
+            Feedback(
+                user_id=user_id,
+                service_id=service_id,
+                appointment_id=appointment_id,
+                rating=rating,
+                content=content,
+            )
         )
-        db.session.add(fb)
-        db.session.commit()
-        return fb
 
     @staticmethod
     def get_by_appointment(appointment_id):
@@ -49,7 +51,3 @@ class FeedbackRepository:
         return db.session.scalar(
             select(func.avg(Feedback.rating)).where(Feedback.service_id == service_id)
         )
-
-    @staticmethod
-    def count():
-        return db.session.scalar(select(func.count()).select_from(Feedback))

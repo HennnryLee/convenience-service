@@ -4,8 +4,9 @@ from sqlalchemy import func, select
 from app.extensions import db
 from app.models.appointment import Appointment
 from app.models.service import ServiceItem
+from app.repositories.base import BaseRepository
 
-# 排序方式 -> 排序表达式（表驱动：新增排序只改这张表）
+# 排序方式 -> 排序表达式工厂（表驱动：新增排序只改这张表）
 SORT_EXPRESSIONS = {
     "name": lambda: ServiceItem.name.asc(),
     "price_asc": lambda: ServiceItem.price.asc(),
@@ -15,45 +16,22 @@ SORT_EXPRESSIONS = {
 }
 
 
-class ServiceRepository:
-    @staticmethod
-    def add(service, commit=True):
-        db.session.add(service)
-        if commit:
-            db.session.commit()
-        return service
-
-    @staticmethod
-    def get(service_id):
-        return db.session.get(ServiceItem, service_id)
+class ServiceRepository(BaseRepository):
+    model = ServiceItem
 
     @staticmethod
     def get_by_name(name):
         return db.session.scalar(select(ServiceItem).where(ServiceItem.name == name))
 
-    @staticmethod
-    def create(**fields):
-        return ServiceRepository.add(ServiceItem(**fields))
+    @classmethod
+    def create(cls, **fields):
+        return cls.add(ServiceItem(**fields))
 
-    @staticmethod
-    def update(service, commit=True, **fields):
-        for key, value in fields.items():
-            setattr(service, key, value)
-        if commit:
-            db.session.commit()
-        return service
-
-    @staticmethod
-    def set_status(service, status):
-        """上架 / 下架（软删除：不物理删除，保留历史预约的外键完整性）。"""
+    @classmethod
+    def set_status(cls, service, status):
+        """上架 / 下架（软删除：保留历史预约的外键完整性）。"""
         service.status = status
-        db.session.commit()
-        return service
-
-    @staticmethod
-    def delete(service):
-        db.session.delete(service)
-        db.session.commit()
+        return cls.save(service)
 
     @staticmethod
     def search(keyword=None, category=None, sort="default", only_online=True, page=1, per_page=9):
@@ -70,11 +48,8 @@ class ServiceRepository:
             )
         if sort == "popular":
             stmt = stmt.outerjoin(Appointment).group_by(ServiceItem.id)
-        order = SORT_EXPRESSIONS.get(sort, SORT_EXPRESSIONS["default"])()
-        if sort == "popular":
-            stmt = stmt.order_by(order, ServiceItem.id.asc())
-        else:
-            stmt = stmt.order_by(order, ServiceItem.id.asc())
+        stmt = stmt.order_by(SORT_EXPRESSIONS.get(sort, SORT_EXPRESSIONS["default"])(),
+                             ServiceItem.id.asc())
         return db.paginate(stmt, page=page, per_page=per_page, error_out=False)
 
     @staticmethod
@@ -89,7 +64,3 @@ class ServiceRepository:
         return db.session.scalar(
             select(func.count()).select_from(ServiceItem).where(ServiceItem.status == status)
         )
-
-    @staticmethod
-    def count_all():
-        return db.session.scalar(select(func.count()).select_from(ServiceItem))

@@ -1,25 +1,17 @@
 """用户数据访问层（Repository 模式）。
 
 职责：封装全部针对 users 表的 ORM 操作，使业务层不直接出现查询构造代码。
-好处：查询集中、可复用、可替换（如将来换成 MySQL 或缓存，只需改本文件）。
+通用增删改查继承自 BaseRepository，本类只保留用户特有的查询。
 """
 from sqlalchemy import or_, select
 
 from app.extensions import db
 from app.models.user import User
+from app.repositories.base import BaseRepository
 
 
-class UserRepository:
-    @staticmethod
-    def add(user, commit=True):
-        db.session.add(user)
-        if commit:
-            db.session.commit()
-        return user
-
-    @staticmethod
-    def get(user_id):
-        return db.session.get(User, user_id)
+class UserRepository(BaseRepository):
+    model = User
 
     @staticmethod
     def get_by_username(username):
@@ -46,8 +38,8 @@ class UserRepository:
     def email_exists(email):
         return UserRepository.get_by_email(email) is not None
 
-    @staticmethod
-    def create(username, email, password, phone=None, real_name=None, role="user"):
+    @classmethod
+    def create(cls, username, email, password, phone=None, real_name=None, role="user"):
         """创建用户（密码在此处哈希，明文不落库）。"""
         user = User(
             username=username,
@@ -57,21 +49,12 @@ class UserRepository:
             role=role,
         )
         user.set_password(password)
-        return UserRepository.add(user)
+        return cls.add(user)
 
-    @staticmethod
-    def update(user, commit=True, **fields):
-        for key, value in fields.items():
-            setattr(user, key, value)
-        if commit:
-            db.session.commit()
-        return user
-
-    @staticmethod
-    def set_active(user, active=True):
+    @classmethod
+    def set_active(cls, user, active=True):
         user.is_active = bool(active)
-        db.session.commit()
-        return user
+        return cls.save(user)
 
     @staticmethod
     def search(keyword=None, role=None, page=1, per_page=10):

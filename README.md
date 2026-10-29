@@ -17,13 +17,27 @@ python run.py
 
 ## 运行测试
 ```bash
-pytest                                   # 全部测试
-pytest tests/unit --cov=app --cov-report=term-missing   # 单元测试 + 覆盖率
+pytest                                           # 全部测试（77 条）
+pytest tests/unit                                # 单元测试
+pytest tests/functional                          # 功能测试（黑盒）
+pytest tests/integration                         # 集成测试
+pytest tests/system                              # 系统测试（端到端/安全）
+pytest --cov=app --cov-report=term-missing       # 覆盖率
 ```
 
-## 目录与文档
-- 目录结构：`docs/01-项目结构说明.md`
-- 需求：`docs/02-用户故事列表.md`
-- 过程：`docs/03-开发过程选择与Scrum说明.md`
-- 设计：`docs/04-领域模型与契约式设计.md`、`docs/05-数据库设计说明.md`
-- 交付：`docs/06-部署与运行说明.md`、`docs/07-重构记录.md`、`docs/08-交付清单.md`
+## 文档索引
+| 编号 | 文档 |
+| --- | --- |
+| 00 | Git 提交规范 |
+| 01 | 项目结构说明（含技术选型与分层架构） |
+| 02 | 用户故事列表（Product Backlog） |
+| 03 | 开发过程选择与 Scrum 说明 |
+| 04 | 模块结构图与耦合分析 |
+| 05 | 核心模块详细设计与 TDD 记录 |
+| 06 | 领域模型与契约式设计 |
+| 07 | 数据库设计说明 |
+| 08 | 用户交互设计说明 |
+| 09 | 重构记录 |
+| 10 | 部署与运行说明 |
+| 11 | 交付清单 |
+| — | `docs/schema.sql` 数据库建表脚本 |
