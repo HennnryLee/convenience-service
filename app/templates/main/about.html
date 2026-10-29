@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}关于平台{% endblock %}
+{% block content %}
+<section class="panel">
+    <h2>关于本平台</h2>
+    <p>本平台为《软件构造》课程实验项目，采用 Flask + Jinja2 + SQLAlchemy 构造，
+        覆盖用户管理、服务查询、在线预约、公告资讯、反馈评价与后台管理六大功能模块。</p>
+    <ul>
+        <li>开发模式：增量迭代（Scrum）</li>
+        <li>技术栈：Flask 3 / Jinja2 / Flask-SQLAlchemy / Flask-Login / Flask-WTF</li>
+        <li>数据库：SQLite（可通过环境变量切换 MySQL 8.0）</li>
+    </ul>
+</section>
+{% endblock %}

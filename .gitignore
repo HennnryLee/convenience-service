@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 数据库 / 实例文件（SQLite 运行时生成）
+instance/
+*.db
+*.sqlite3
+
+# 测试与覆盖率产物
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+reports/
+*.log
+
+# 打包 / 编辑器
+build/
+dist/
+*.egg-info/
+.idea/
+.vscode/
+.DS_Store
