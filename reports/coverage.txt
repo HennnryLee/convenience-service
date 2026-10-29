@@ -1,0 +1,45 @@
+Name                                          Stmts   Miss Branch BrPart  Cover   Missing
+-----------------------------------------------------------------------------------------
+app\__init__.py                                  48      3      0      0    94%   63, 88, 92
+app\config.py                                    29      0      0      0   100%
+app\extensions.py                                 9      0      0      0   100%
+app\forms\__init__.py                             6      0      0      0   100%
+app\forms\admin_forms.py                         25      0      0      0   100%
+app\forms\appointment_forms.py                   14      0      0      0   100%
+app\forms\auth_forms.py                          41      6     10      0    80%   77-78, 81-84
+app\forms\feedback_forms.py                       9      0      0      0   100%
+app\forms\service_forms.py                       12      0      0      0   100%
+app\models\__init__.py                            6      0      0      0   100%
+app\models\announcement.py                       17      1      0      0    94%   26
+app\models\appointment.py                        31      2      0      0    94%   50, 67
+app\models\feedback.py                           21      1      0      0    95%   41
+app\models\service.py                            28      1      2      0    97%   58
+app\models\user.py                               33      2      2      1    91%   56, 68
+app\modules\__init__.py                           0      0      0      0   100%
+app\modules\admin.py                             98     20     20      8    73%   73-74, 80-81, 84-85, 89, 96-97, 116-124, 141, 146, 163
+app\modules\announcements.py                     24      5      6      3    73%   18-19, 23, 31-32
+app\modules\appointments.py                      38      0      8      0   100%
+app\modules\auth.py                              52     11     14      3    76%   20, 38, 47-48, 67-78
+app\modules\feedback.py                          31      4      6      2    84%   19-20, 31-32
+app\modules\main.py                              11      1      0      0    91%   24
+app\modules\services.py                          27      2      6      1    91%   41-42
+app\repositories\__init__.py                      6      0      0      0   100%
+app\repositories\announcement_repository.py      23      0      4      1    96%   21->23
+app\repositories\appointment_repository.py       48      2      6      0    96%   91-96
+app\repositories\base.py                         33      1      8      3    90%   23->25, 41, 48->50
+app\repositories\feedback_repository.py          23      0      0      0   100%
+app\repositories\service_repository.py           41      1     10      2    94%   50, 58->60
+app\repositories\user_repository.py              48      1      8      1    96%   69
+app\services\__init__.py                          0      0      0      0   100%
+app\services\appointment_rules.py                40      0     16      0   100%
+app\services\appointment_service.py              56      4     22      4    90%   41, 62, 93, 106
+app\services\auth_service.py                     41      2     24      2    94%   19, 24
+app\services\feedback_service.py                 21      2     12      2    88%   26, 28
+app\services\password_policy.py                  18      0     10      0   100%
+app\services\service_catalog.py                  29      4     10      4    79%   18, 20, 22, 39
+app\utils\__init__.py                             0      0      0      0   100%
+app\utils\constants.py                           11      0      0      0   100%
+app\utils\decorators.py                          10      0      2      0   100%
+app\utils\validators.py                          17      2      4      2    81%   29, 32
+-----------------------------------------------------------------------------------------
+TOTAL                                          1075     78    210     39    90%
