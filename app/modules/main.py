@@ -2,11 +2,17 @@
 
 职责：站点首页、关于页；不依赖具体业务，仅做门户与导航。
 """
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, url_for
 
 from app.repositories import AnnouncementRepository, ServiceRepository
 
 main_bp = Blueprint("main", __name__)
+
+
+@main_bp.route("/favicon.ico")
+def favicon():
+    """站点图标：浏览器自动请求 /favicon.ico 时重定向到 SVG 图标，避免 404。"""
+    return redirect(url_for("static", filename="favicon.svg"))
 
 
 @main_bp.route("/")
