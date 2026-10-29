@@ -26,7 +26,10 @@ def create_app(config_name="development"):
     # 注：login_manager（会话与登录状态）在实验四"用户交互构造"增量接入，
     #     届时需同时注册 user_loader 回调（Flask-Login 强制要求）。
 
-    # 2) 注册蓝图（按业务模块划分，体现模块化构造）
+    # 2) 注册模型（保证 db.create_all 能发现全部数据表）
+    from . import models  # noqa: F401
+
+    # 3) 注册蓝图（按业务模块划分，体现模块化构造）
     from .modules.main import main_bp
 
     app.register_blueprint(main_bp)
