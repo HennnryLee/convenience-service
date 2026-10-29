@@ -10,6 +10,9 @@ import os
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 INSTANCE_DIR = os.path.join(BASE_DIR, "instance")
 
+# 确保实例目录存在（SQLite 数据库文件存放位置），避免首次运行时"unable to open database file"
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+
 # 数据库 URI 默认使用 SQLite；若设置环境变量 DATABASE_URL（如
 # mysql+pymysql://user:password@localhost:3306/convenience?charset=utf8mb4）
 # 则自动切换到 MySQL，业务代码无需任何改动（见 docs/05-部署与运行说明.md）
