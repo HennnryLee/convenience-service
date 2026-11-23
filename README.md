@@ -15,9 +15,12 @@ python run.py
 ```
 默认账号：管理员 `admin / Admin@123`，普通用户 `zhangsan / User@123`。
 
+> ⚠️ `--init-db --seed` 是幂等的，**不会删除已有数据**。只有 `--force-reset` 会 `drop_all()`，
+> 且会先打印将删除的数据量；执行前请备份 `instance/app.db`。
+
 ## 运行测试
 ```bash
-pytest                                           # 全部测试（77 条）
+pytest                                           # 全部测试（290 条）
 pytest tests/unit                                # 单元测试
 pytest tests/functional                          # 功能测试（黑盒）
 pytest tests/integration                         # 集成测试
