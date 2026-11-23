@@ -2,6 +2,7 @@
 from datetime import datetime
 
 from app.extensions import db
+from app.utils.constants import ANNOUNCEMENT_SUMMARY_LENGTH
 
 
 class Announcement(db.Model):
@@ -18,9 +19,10 @@ class Announcement(db.Model):
 
     @property
     def summary(self):
-        """列表页摘要：正文前 60 字。"""
+        """列表页摘要：正文前 ANNOUNCEMENT_SUMMARY_LENGTH 字（常量化，避免魔法数字）。"""
+        limit = ANNOUNCEMENT_SUMMARY_LENGTH
         text = (self.content or "").strip()
-        return text[:60] + ("…" if len(text) > 60 else "")
+        return text[:limit] + ("…" if len(text) > limit else "")
 
     def __repr__(self):
         return f"<Announcement {self.title}>"

@@ -71,14 +71,15 @@ def test_offline_service_is_rejected():
 
 def test_duplicate_appointment_is_rejected():
     errors = validate_new_appointment(make_context(duplicate=True), TOMORROW, VALID_SLOT, today=TODAY)
-    assert any("已预约" in e for e in errors)
+    assert "你已预约该时段，请勿重复提交。" in errors
 
 
 # ---------------------------------------------------------------- 容量边界
 def test_capacity_full_is_rejected():
     ctx = make_context(capacity=2, used=2)
     errors = validate_new_appointment(ctx, TOMORROW, VALID_SLOT, today=TODAY)
-    assert any("已满" in e for e in errors)
+    # 断言完整提示语（而非仅子串）：变异测试 M11 曾因只断言"已满"而存活
+    assert "该时段预约名额已满，请选择其它时段。" in errors
 
 
 def test_capacity_last_one_is_allowed():

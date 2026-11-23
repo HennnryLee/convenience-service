@@ -1,4 +1,5 @@
 """反馈评价服务：评价资格判定与评价提交。"""
+from app.utils.constants import MAX_RATING, MIN_RATING
 from app.repositories.feedback_repository import FeedbackRepository
 
 
@@ -24,8 +25,8 @@ def create_feedback(user, appointment, rating, content=None):
     ok, reason = can_review(user, appointment)
     if not ok:
         return None, reason
-    if not isinstance(rating, int) or not (1 <= rating <= 5):
-        return None, "评分必须为 1-5 之间的整数。"
+    if not isinstance(rating, int) or not (MIN_RATING <= rating <= MAX_RATING):
+        return None, f"评分必须为 {MIN_RATING}-{MAX_RATING} 之间的整数。"
     feedback = FeedbackRepository.create(
         user_id=user.id,
         service_id=appointment.service_id,

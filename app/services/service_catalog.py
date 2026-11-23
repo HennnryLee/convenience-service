@@ -3,6 +3,7 @@ from app.config import Config
 from app.repositories.service_repository import ServiceRepository
 from app.services.appointment_service import get_slot_availability
 from app.utils.constants import SERVICE_CATEGORIES, SORT_OPTIONS
+from app.utils.table_driven import category_badge, duration_level, price_level
 from app.utils.validators import validate_keyword
 
 
@@ -31,7 +32,11 @@ def search_services(keyword=None, category=None, sort="default", page=1, per_pag
 
 
 def get_service_detail(service_id):
-    """服务详情：基本信息 + 今日各时段剩余名额 + 近期评价。"""
+    """服务详情：基本信息 + 今日各时段剩余名额 + 近期评价。
+
+    后置条件：服务存在时返回 dict，且含 price_level / duration_level 两个表驱动派生字段
+    （阶梯访问与索引访问的结果，供页面直接展示，避免模板里写 if/elif）。
+    """
     from app.repositories.feedback_repository import FeedbackRepository
 
     service = ServiceRepository.get(service_id)
@@ -39,7 +44,14 @@ def get_service_detail(service_id):
         return None
     availability = get_slot_availability(service)
     feedbacks = FeedbackRepository.list_by_service(service_id, limit=5)
-    return {"service": service, "availability": availability, "feedbacks": feedbacks}
+    return {
+        "service": service,
+        "availability": availability,
+        "feedbacks": feedbacks,
+        "price_level": price_level(service.price),
+        "duration_level": duration_level(service.duration_minutes),
+        "category_badge": category_badge(service.category),
+    }
 
 
 def get_categories_with_count():

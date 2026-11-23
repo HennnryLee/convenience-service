@@ -63,6 +63,13 @@ RATING_TEXT = {
     5: "非常满意",
 }
 
+# 评分取值区间（静态分析发现的条件内魔法数字，提取为具名常量）
+MIN_RATING = 1
+MAX_RATING = 5
+
+# 公告列表摘要截取长度
+ANNOUNCEMENT_SUMMARY_LENGTH = 60
+
 
 def status_text(status):
     """状态码 -> 中文文案（表驱动查表，避免 if/elif 链）。"""

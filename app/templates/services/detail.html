@@ -8,7 +8,10 @@
         <span class="price">¥{{ service.price }}</span>
     </div>
     <p class="muted">
-        分类：{{ category_text(service.category) }} ·
+        分类：{{ category_text(service.category) }}（{{ category_badge }}类） ·
+        {# 价格档位与耗时档位由表驱动查表得到（阶梯访问/索引访问），模板中无 if/elif 分支 #}
+        价格档位：{{ price_level }} ·
+        耗时档位：{{ duration_level }} ·
         办理地点：{{ service.address or '详见页面说明' }} ·
         预计耗时：{{ service.duration_minutes }} 分钟 ·
         每时段容量：{{ service.daily_capacity }} 人
