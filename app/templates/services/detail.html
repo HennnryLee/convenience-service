@@ -18,11 +18,16 @@
     </p>
     <p>{{ service.description }}</p>
     <p>综合评分：{{ service.average_rating if service.average_rating else '暂无评价' }}</p>
-    <a class="btn btn-primary" href="{{ url_for('appointments.create', service_id=service.id) }}">立即预约</a>
+    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+        <span class="badge badge-cancelled">管理员账号用于后台管理，不可提交预约；如需预约请使用普通用户账号</span>
+    {% else %}
+        <a class="btn btn-primary" href="{{ url_for('appointments.create', service_id=service.id) }}">立即预约</a>
+    {% endif %}
 </section>
 
 <section class="panel">
     <h3>今日各时段剩余名额</h3>
+    <p style="color:#666;font-size:0.9em;">当天已开始的时段不可预约，请改选尚未开始的时段或改约其它日期。</p>
     <table class="grid">
         <tr><th>时段</th><th>容量</th><th>剩余</th><th>状态</th></tr>
         {% for item in availability %}
@@ -30,7 +35,7 @@
                 <td>{{ item.slot }}</td>
                 <td>{{ item.capacity }}</td>
                 <td>{{ item.remaining }}</td>
-                <td>{% if item.full %}<span class="badge badge-cancelled">已满</span>{% else %}<span class="badge badge-online">可预约</span>{% endif %}</td>
+                <td>{% if item.past %}<span class="badge badge-cancelled">已过</span>{% elif item.full %}<span class="badge badge-cancelled">已满</span>{% else %}<span class="badge badge-online">可预约</span>{% endif %}</td>
             </tr>
         {% endfor %}
     </table>

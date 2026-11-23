@@ -1,4 +1,6 @@
 """服务查询服务：关键词搜索、分类浏览、排序、详情与可用时段。"""
+from datetime import datetime
+
 from app.config import Config
 from app.repositories.service_repository import ServiceRepository
 from app.services.appointment_service import get_slot_availability
@@ -42,7 +44,7 @@ def get_service_detail(service_id):
     service = ServiceRepository.get(service_id)
     if service is None:
         return None
-    availability = get_slot_availability(service)
+    availability = get_slot_availability(service, now=datetime.now())
     feedbacks = FeedbackRepository.list_by_service(service_id, limit=5)
     return {
         "service": service,

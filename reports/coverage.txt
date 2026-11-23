@@ -18,7 +18,7 @@ app\models\user.py                               33      2      2      1    91% 
 app\modules\__init__.py                           0      0      0      0   100%
 app\modules\admin.py                             98     12     20      8    83%   73-74, 80-81, 84-85, 89, 96-97, 118, 141, 163
 app\modules\announcements.py                     24      5      6      3    73%   18-19, 23, 31-32
-app\modules\appointments.py                      38      0      8      0   100%
+app\modules\appointments.py                      41      0     10      0   100%
 app\modules\auth.py                              52     11     14      3    76%   20, 38, 47-48, 67-78
 app\modules\feedback.py                          31      2      6      1    92%   31-32
 app\modules\main.py                              14      2      0      0    86%   15, 30
@@ -31,12 +31,12 @@ app\repositories\feedback_repository.py          23      0      0      0   100%
 app\repositories\service_repository.py           41      1     10      2    94%   50, 58->60
 app\repositories\user_repository.py              48      1      8      1    96%   69
 app\services\__init__.py                          0      0      0      0   100%
-app\services\appointment_rules.py                60      0     16      0   100%
-app\services\appointment_service.py              56      2     22      2    95%   62, 106
+app\services\appointment_rules.py                72      0     18      0   100%
+app\services\appointment_service.py              62      2     28      2    96%   70, 121
 app\services\auth_service.py                     41      2     24      2    94%   19, 24
 app\services\feedback_service.py                 22      2     12      2    88%   27, 29
 app\services\password_policy.py                  18      0     10      0   100%
-app\services\service_catalog.py                  30      4     10      4    80%   19, 21, 23, 44
+app\services\service_catalog.py                  31      4     10      4    80%   21, 23, 25, 46
 app\utils\__init__.py                             0      0      0      0   100%
 app\utils\constants.py                           14      0      0      0   100%
 app\utils\contracts.py                           33      1     12      3    91%   72->74, 75->77, 78
@@ -44,4 +44,4 @@ app\utils\decorators.py                          10      0      2      0   100%
 app\utils\table_driven.py                        24      0      8      0   100%
 app\utils\validators.py                          17      2      4      2    81%   29, 32
 -----------------------------------------------------------------------------------------
-TOTAL                                          1162     68    230     39    92%
+TOTAL                                          1184     68    240     39    92%

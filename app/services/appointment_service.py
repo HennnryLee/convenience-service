@@ -3,7 +3,7 @@
 设计：规则判定全部委托给 appointment_rules（纯函数），
 本模块只负责取数、拼装上下文、调用规则、写库 —— 职责单一，便于测试。
 """
-from datetime import date
+from datetime import date, datetime
 
 from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.service_repository import ServiceRepository
@@ -11,6 +11,7 @@ from app.services.appointment_rules import (
     AppointmentContext,
     can_cancel,
     can_transition,
+    is_slot_started,
     remaining_capacity,
     validate_new_appointment,
 )
@@ -45,12 +46,19 @@ def validate_basic_fields(contact_name, contact_phone):
 
 
 def create_appointment(user, service_id, appointment_date, time_slot, contact_name, contact_phone,
-                       remark=None):
+                       remark=None, now=None):
     """提交预约。
+
+    now 可注入当前时刻（datetime），用于拒绝「今天已经开始/已过」的时段；
+    默认取 datetime.now()，注入固定值便于单元测试。
 
     后置条件：成功返回 (appointment, [])；失败返回 (None, 错误信息列表)。
     不变量：任何失败路径都不写库（先校验后提交）。
     """
+    # 0) 角色权限（教材：最小权限）。管理员职责是管理与发布，不参与前台预约业务。
+    if getattr(user, "role", None) == "admin":
+        return None, ["管理员账号用于后台管理，不可提交预约，请使用普通用户账号。"]
+
     # 1) 表单字段校验（便宜的校验先做）
     form_errors = validate_basic_fields(contact_name, contact_phone)
     if form_errors:
@@ -61,7 +69,14 @@ def create_appointment(user, service_id, appointment_date, time_slot, contact_na
     if service is None:
         return None, ["所选服务不存在或已下架。"]
 
-    # 3) 业务规则校验（需要查询数据库，故放在最后）
+    # 3) 当日已过时段校验（时间相关，独立于规则层的纯日期校验）
+    # 防御性检查：表单可能未提交日期（None），此时交给规则层提示"请选择预约日期"
+    if now is None:
+        now = datetime.now()
+    if isinstance(appointment_date, date) and is_slot_started(appointment_date, time_slot, now):
+        return None, ["该时段已开始或已过，请改选尚未开始的时段，或改约其它日期。"]
+
+    # 4) 业务规则校验（需要查询数据库，故放在最后）
     rule_errors = validate_new_appointment(
         build_context(service, appointment_date, time_slot, user.id),
         appointment_date,
@@ -112,10 +127,13 @@ def change_status(appointment, new_status):
     return True, f"预约状态已更新为「{appointment.status_text}」。"
 
 
-def get_slot_availability(service, appointment_date=None):
+def get_slot_availability(service, appointment_date=None, now=None):
     """返回某服务指定日期各时段的剩余名额（用于详情页展示）。
 
-    返回：[{slot, remaining, capacity, full}, ...]
+    now 传入时额外标记 past（今天已开始的时段），便于模板显示"已过"；
+    不传则 past 全为 False，保持对旧调用的兼容。
+
+    返回：[{slot, remaining, capacity, full, past}, ...]
     """
     appointment_date = appointment_date or date.today()
     result = []
@@ -128,6 +146,7 @@ def get_slot_availability(service, appointment_date=None):
                 "remaining": remaining,
                 "capacity": service.daily_capacity,
                 "full": remaining <= 0,
+                "past": is_slot_started(appointment_date, slot, now) if now is not None else False,
             }
         )
     return result

@@ -8,7 +8,7 @@
      与不变式（教材 4.9.3"期望什么、保证什么、保持什么"），见 docs/12。
 """
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 
 from app.utils.constants import APPOINTMENT_TRANSITIONS, TIME_SLOTS
 from app.utils.contracts import ensure, invariant, require
@@ -74,6 +74,33 @@ def can_transition(current, new):
 def can_cancel(status):
     """用户能否主动取消：等价于"可迁移到 cancelled"。"""
     return can_transition(status, "cancelled")
+
+
+def is_slot_started(appointment_date, slot, now):
+    """判断「今天」的这个时段是否已经到点开始。
+
+    与 validate_new_appointment 分开的理由：本检查依赖"当前时刻"这一外部事实，
+    单独成纯函数便于注入固定时刻做单元测试，也让 validate_new_appointment 的
+    语句数保持稳定（对应教材 11.4 的程序插装实验，见 reports/instrumentation_report.md）。
+
+    前置条件：appointment_date 为 date；slot 为字符串；now 为 datetime。
+    后置条件：返回布尔值。
+    不变量：不修改入参，不改动时段表。
+    """
+    require(isinstance(appointment_date, date), "appointment_date 必须是 date")
+    require(isinstance(slot, str), "slot 必须是字符串")
+    require(isinstance(now, datetime), "now 必须是 datetime")
+    slots_snapshot = tuple(TIME_SLOTS)
+
+    if appointment_date != now.date() or slot not in TIME_SLOTS:
+        result = False  # 非今日 / 无效时段由其它规则负责，这里不越权判定
+    else:
+        start_h, start_m = (int(part) for part in slot.split("-")[0].split(":"))
+        result = (now.hour, now.minute) >= (start_h, start_m)
+
+    ensure(isinstance(result, bool), "is_slot_started 必须返回布尔值")
+    invariant(tuple(TIME_SLOTS) == slots_snapshot, "时段表在判定过程中不得被修改")
+    return result
 
 
 # ------------------------------------------------------------------ 预约校验

@@ -13,6 +13,11 @@ appointments_bp = Blueprint("appointments", __name__)
 @appointments_bp.route("/create/<int:service_id>", methods=["GET", "POST"])
 @login_required
 def create(service_id):
+    # 最小权限：管理员职责是管理与发布，不参与前台预约业务（DEF-009）
+    if getattr(current_user, "role", None) == "admin":
+        flash("管理员账号用于后台管理，不可提交预约，请使用普通用户账号。", "warning")
+        return redirect(url_for("services.detail", service_id=service_id))
+
     service = ServiceRepository.get(service_id)
     if service is None or not service.is_online:
         flash("该服务不存在或已下架，请选择其它服务。", "warning")

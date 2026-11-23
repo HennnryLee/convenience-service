@@ -18,6 +18,6 @@
             <a class="btn btn-outline" href="{{ url_for('services.detail', service_id=service.id) }}">返回详情</a>
         </div>
     </form>
-    <p class="muted">提示：仅可预约今天起 30 天内的服务；同一时段每人限预约一次；名额约满后将无法提交。</p>
+    <p class="muted">提示：仅可预约今天起 30 天内的服务；当天已开始的时段不可预约，请改选其它时段或改约其它日期；同一时段每人限预约一次；名额约满后将无法提交。</p>
 </section>
 {% endblock %}

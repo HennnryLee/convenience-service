@@ -4,6 +4,9 @@
 
 {% block content %}
 <h2>预约管理</h2>
+<p class="muted">这里列出的是<strong>全体用户</strong>的预约，管理员在此做审批与办结，不是自己预约。
+状态流转：待确认 → 已确认（受理）→ 已完成（服务办结后由管理员确认，为终态）；
+待确认/已确认均可取消。只有「已完成」的预约，用户才能提交评价。</p>
 <div class="category-nav">
     {% for code, text in [('', '全部'), ('pending', '待确认'), ('confirmed', '已确认'), ('completed', '已完成'), ('cancelled', '已取消')] %}
         <a class="badge {% if status == code %}badge-online{% endif %}" href="{{ url_for('admin.appointments', status=code) }}">{{ text }}</a>
