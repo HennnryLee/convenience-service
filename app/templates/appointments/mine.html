@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagination_widget, status_badge %}
+{% from "_macros.html" import pagination_widget, status_badge, csrf_input %}
 {% block title %}我的预约{% endblock %}
 
 {% block content %}
@@ -24,6 +24,7 @@
             <td>
                 {% if appt.status in ['pending', 'confirmed'] %}
                     <form method="post" action="{{ url_for('appointments.cancel', appointment_id=appt.id) }}" style="display:inline">
+                        {{ csrf_input() }}
                         <button class="btn btn-sm btn-danger" type="submit">取消预约</button>
                     </form>
                 {% else %}

@@ -128,14 +128,19 @@ def test_alt_a3_slot_full_rejected(client, normal_user, service):
 
 
 def test_alt_a4_missing_csrf_token_rejected():
-    """备选流 A4：开启 CSRF 防护后，缺少令牌的提交被拒绝（模拟异常/跨站提交）。"""
+    """备选流 A4：开启 CSRF 防护后，缺少令牌的提交被拒绝（模拟异常/跨站提交）。
+
+    注意：此处必须用 testing 配置的**内存库**并手动开启 CSRF，
+    不能用 development 配置——它会连到真实的 instance/app.db，
+    用例中的 drop_all() 会清空用户数据。
+    """
     from app import create_app
     from app.extensions import db as _db
 
-    app = create_app("development")  # 开发配置：CSRF 防护开启
+    app = create_app("testing")
+    app.config["WTF_CSRF_ENABLED"] = True
     assert app.config["WTF_CSRF_ENABLED"] is True
     with app.app_context():
-        _db.drop_all()
         _db.create_all()
         user = User(username="csrfuser", email="csrf@example.com")
         user.set_password("User@123")

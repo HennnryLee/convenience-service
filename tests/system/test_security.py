@@ -51,10 +51,10 @@ def test_xss_in_service_name_is_escaped(client):
 
 # ------------------------------------------------------------------ CSRF
 def test_csrf_protection_enabled_in_development():
-    from app import create_app
+    # 只读取配置类，不创建应用（避免任何真实数据库连接）
+    from app.config import DevelopmentConfig
 
-    app = create_app("development")
-    assert app.config["WTF_CSRF_ENABLED"] is True
+    assert DevelopmentConfig.WTF_CSRF_ENABLED is True
 
 
 def test_post_without_csrf_token_rejected(client, normal_user, service):

@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagination_widget, status_badge %}
+{% from "_macros.html" import pagination_widget, status_badge, csrf_input %}
 {% block title %}预约管理{% endblock %}
 
 {% block content %}
@@ -22,6 +22,7 @@
             <td>
                 {% if appt.status in ['pending', 'confirmed'] %}
                     <form method="post" action="{{ url_for('admin.update_appointment_status', appointment_id=appt.id) }}">
+                        {{ csrf_input() }}
                         <select name="status" class="form-control" style="width:auto;display:inline-block">
                             {% for s in allowed_transitions(appt.status) %}
                                 <option value="{{ s }}">{{ status_text(s) }}</option>

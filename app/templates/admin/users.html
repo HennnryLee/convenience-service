@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_macros.html" import pagination_widget %}
+{% from "_macros.html" import pagination_widget, csrf_input %}
 {% block title %}用户管理{% endblock %}
 
 {% block content %}
@@ -20,6 +20,7 @@
             <td><span class="badge {{ 'badge-online' if user.is_active else 'badge-cancelled' }}">{{ '正常' if user.is_active else '已禁用' }}</span></td>
             <td>
                 <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" style="display:inline">
+                    {{ csrf_input() }}
                     <button class="btn btn-sm btn-outline" type="submit">{{ '禁用' if user.is_active else '启用' }}</button>
                 </form>
             </td>

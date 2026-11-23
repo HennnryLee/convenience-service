@@ -1,4 +1,12 @@
 {# 通用表单与分页宏：消除各页面重复的表单渲染代码（DRY 原则） #}
+
+{# 行内手写 POST 表单（未经 FlaskForm 渲染）必须显式携带 CSRF 令牌，
+   否则会被全局 CSRFProtect 拦截并返回 400 "The CSRF token is missing."。
+   csrf_token() 由 Flask-WTF 在 Jinja 全局函数中注册。 #}
+{% macro csrf_input() %}
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}
+
 {% macro render_field(field) %}
 <div class="form-group">
     {{ field.label }}
