@@ -74,6 +74,21 @@ MAX_RATING = 5
 # 公告列表摘要截取长度
 ANNOUNCEMENT_SUMMARY_LENGTH = 60
 
+# ---------------- 审计动作文案（后台写操作留痕） ----------------
+AUDIT_ACTION_TEXT = {
+    "service.create": "新增服务",
+    "service.update": "编辑服务",
+    "service.toggle": "服务上下架",
+    "user.toggle": "用户启用/禁用",
+    "appointment.status": "预约状态变更",
+    "announcement.create": "发布公告",
+}
+
+
+def audit_action_text(action):
+    """审计动作码 -> 中文文案（未知动作原样返回，便于发现新动作漏配文案）。"""
+    return AUDIT_ACTION_TEXT.get(action, action)
+
 
 def status_text(status):
     """状态码 -> 中文文案（表驱动查表，避免 if/elif 链）。"""

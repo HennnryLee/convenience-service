@@ -21,9 +21,9 @@ class AnnouncementRepository(BaseRepository):
         if only_published:
             stmt = stmt.where(Announcement.is_published.is_(True))
         if keyword:
-            pattern = f"%{keyword}%"
             stmt = stmt.where(
-                Announcement.title.like(pattern) | Announcement.content.like(pattern)
+                Announcement.title.contains(keyword, autoescape=True)
+                | Announcement.content.contains(keyword, autoescape=True)
             )
         stmt = stmt.order_by(Announcement.created_at.desc())
         return db.paginate(stmt, page=page, per_page=per_page, error_out=False)

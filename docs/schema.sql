@@ -5,6 +5,7 @@
 CREATE TABLE services (
 	id INTEGER NOT NULL, 
 	name VARCHAR(100) NOT NULL, 
+	name_pinyin VARCHAR(255) NOT NULL, 
 	category VARCHAR(20) NOT NULL, 
 	description TEXT, 
 	address VARCHAR(200), 
@@ -62,6 +63,21 @@ CREATE TABLE appointments (
 	CONSTRAINT ck_appt_status CHECK (status IN ('pending', 'confirmed', 'completed', 'cancelled')), 
 	FOREIGN KEY(user_id) REFERENCES users (id), 
 	FOREIGN KEY(service_id) REFERENCES services (id)
+);
+
+CREATE TABLE audit_logs (
+	id INTEGER NOT NULL, 
+	actor_id INTEGER, 
+	actor_username VARCHAR(20) NOT NULL, 
+	action VARCHAR(50) NOT NULL, 
+	target_type VARCHAR(30), 
+	target_id INTEGER, 
+	detail TEXT, 
+	ip VARCHAR(45), 
+	request_id VARCHAR(64), 
+	created_at DATETIME NOT NULL, 
+	PRIMARY KEY (id), 
+	FOREIGN KEY(actor_id) REFERENCES users (id) ON DELETE SET NULL
 );
 
 CREATE TABLE feedbacks (

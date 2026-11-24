@@ -1,0 +1,41 @@
+# 数据库迁移（Flask-Migrate / Alembic）
+
+## 版本
+
+| revision | 内容 |
+| --- | --- |
+| `7c0a74a1027b` | 初始结构：users / services / appointments / announcements / feedbacks |
+| `798d0427d9c2` | 新增 audit_logs 审计表 |
+
+## 常用命令
+
+```bash
+# 全新库
+flask --app "app:create_app" db upgrade
+
+# 改模型后生成迁移（务必 review 生成的脚本再提交）
+flask --app "app:create_app" db migrate -m "描述变更"
+flask --app "app:create_app" db upgrade
+
+# 回退一个版本
+flask --app "app:create_app" db downgrade -1
+
+# 只查看当前版本
+flask --app "app:create_app" db current
+```
+
+## 已有数据库（instance/app.db）
+
+不要直接 `db upgrade`（初始迁移会重复建表）。先备份，然后二选一：
+
+```bash
+# A. 标记到初始版本，再只执行审计表迁移
+flask --app "app:create_app" db stamp 7c0a74a1027b
+flask --app "app:create_app" db upgrade
+
+# B. 先用 create_all 补表（幂等），再标记为最新
+python run.py --init-db
+flask --app "app:create_app" db stamp head
+```
+
+详见 `docs/16-生产部署与数据库迁移.md`。

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}审计日志{% endblock %}
+
+{% block content %}
+<h2>审计日志</h2>
+<p class="muted">
+    记录管理员在后台的写操作（新增/编辑服务、上下架、用户启停、预约状态变更、发布公告）。
+    本页<strong>只读</strong>，日志只追加、不修改、不删除，便于事后追溯“谁在何时改了什么”。
+</p>
+
+<form class="search-bar" method="get" action="{{ url_for('admin.audit_logs') }}" data-no-loading="true">
+    <select name="action" class="form-control select-inline">
+        <option value="">全部动作</option>
+        {% for code, text in actions.items() %}
+            <option value="{{ code }}" {% if action == code %}selected{% endif %}>{{ text }}</option>
+        {% endfor %}
+    </select>
+    <button class="btn btn-primary" type="submit">筛选</button>
+</form>
+
+{% if pagination.items %}
+<table class="grid">
+    <tr>
+        <th>时间</th><th>操作者</th><th>动作</th><th>对象</th><th>详情</th>
+        <th>IP</th><th>请求 ID</th>
+    </tr>
+    {% for log in pagination.items %}
+        <tr>
+            <td>{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+            <td>{{ log.actor_username }}</td>
+            <td>{{ log.action_text }}</td>
+            <td>{{ log.target_type or '—' }}{% if log.target_id %} #{{ log.target_id }}{% endif %}</td>
+            <td>{{ log.detail or '—' }}</td>
+            <td>{{ log.ip or '—' }}</td>
+            <td><code>{{ log.request_id or '—' }}</code></td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'admin.audit_logs', {'action': action or ''}) }}
+{% else %}
+<div class="panel"><p>暂无审计记录。</p></div>
+{% endif %}
+{% endblock %}

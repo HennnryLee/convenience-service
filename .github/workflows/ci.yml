@@ -38,10 +38,13 @@ jobs:
           python -m pip install -r requirements-dev.txt
 
       - name: 静态检查（ruff）
-        run: python -m ruff check app tests scripts run.py seed.py
+        run: python -m ruff check app tests scripts deploy run.py seed.py wsgi.py
 
       - name: 静态程序分析（教材 5.4.7）
         run: python scripts/static_check.py
+
+      - name: 数据库迁移演练
+        run: python scripts/check_migration.py
 
       - name: 全量测试 + 分支覆盖率（低于门槛即失败）
         env:

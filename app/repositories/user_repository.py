@@ -66,9 +66,12 @@ class UserRepository(BaseRepository):
         """后台用户查询：支持关键词（用户名/姓名/邮箱）与角色过滤、分页。"""
         stmt = select(User)
         if keyword:
-            pattern = f"%{keyword}%"
             stmt = stmt.where(
-                or_(User.username.like(pattern), User.real_name.like(pattern), User.email.like(pattern))
+                or_(
+                    User.username.contains(keyword, autoescape=True),
+                    User.real_name.contains(keyword, autoescape=True),
+                    User.email.contains(keyword, autoescape=True),
+                )
             )
         if role:
             stmt = stmt.where(User.role == role)

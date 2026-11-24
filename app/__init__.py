@@ -16,7 +16,7 @@ import os
 
 from flask import Flask
 
-from .extensions import csrf, db, login_manager
+from .extensions import csrf, db, login_manager, migrate
 
 
 def create_app(config_name=None):
@@ -54,6 +54,7 @@ def _init_extensions(app):
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    migrate.init_app(app, db)
 
     from . import models  # noqa: F401
 

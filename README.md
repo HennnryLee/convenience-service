@@ -20,11 +20,16 @@ python run.py                       # http://127.0.0.1:5000
 也可以使用 Flask CLI（推荐，与应用同配置）：
 
 ```bash
-flask --app "app:create_app()" init-db
+flask --app "app:create_app()" init-db          # 幂等建表（含 audit_logs）
 flask --app "app:create_app()" seed-demo
-flask --app "app:create_app()" check-db
+flask --app "app:create_app()" check-db         # 连接/表结构/行数自检
 flask --app "app:create_app()" create-admin boss boss@example.com
+flask --app "app:create_app()" db upgrade       # 全新库用版本化迁移建表
 ```
+
+后台管理员可在 `/admin/audit-logs` 查看写操作审计记录；健康检查为 `/healthz`。
+已有数据库升级到带审计表的版本请按 `docs/16` 先 `db stamp` 再 `db upgrade`，
+或先执行 `python run.py --init-db` 补表（只加表、不删数据）。
 
 > ⚠️ `--init-db --seed` 是幂等的，**不会删除已有数据**。只有 `--force-reset` 会 `drop_all()`，
 > 且会先打印将删除的数据量；执行前请备份 `instance/app.db`。
@@ -32,22 +37,24 @@ flask --app "app:create_app()" create-admin boss boss@example.com
 ## 运行测试
 
 ```bash
-pytest                                           # 全部测试（528 条）
+pytest                                           # 全部测试（548 条）
 pytest -m unit                                   # 按层：unit / functional / integration / system
 pytest --cov=app --cov-branch --cov-report=term-missing
 python -m ruff check app tests scripts run.py seed.py wsgi.py
 python scripts/static_check.py                   # 静态程序分析（教材 5.4.7）
+python scripts/check_migration.py                # 在临时库上演练 Alembic 迁移链
 ```
 
 当前质量指标：
 
 | 指标 | 结果 |
 | --- | --- |
-| 自动化用例 | 528（unit 348 / functional 99 / integration 33 / system 48） |
+| 自动化用例 | 548（unit 354 / functional 111 / integration 33 / system 50） |
 | 语句覆盖 / 分支覆盖 | 100% / 100%（CI 门槛 98%） |
-| ruff / 静态分析 | 0 问题 / 55 文件 0 问题 |
+| ruff / 静态分析 | 0 问题 / 58 文件 0 问题 |
 | 插装 / 变异 | 27/27 = 100% / 12/12 = 100% |
-| CI | GitHub Actions，Python 3.10/3.12 双版本 |
+| CI | GitHub Actions，Python 3.10/3.12 双版本；ruff + 静态分析 + 迁移演练 + 分支覆盖率 |
+| 生产就绪 | `migrations/` 版本化迁移、`/healthz` 健康检查、`audit_logs` 审计日志、`deploy/` Gunicorn/Nginx/systemd |
 
 ## 项目结构（分层）
 
@@ -60,15 +67,17 @@ app/
 ├── logging.py         request_id、访问日志、滚动文件日志
 ├── security.py        CSP 与安全响应头
 ├── seed_data.py       幂等演示数据
-├── models/            领域实体
-├── repositories/      数据访问（CRUD/聚合/分页）
-├── services/          业务规则 + 应用服务（search/announcement/home/dashboard）
+├── models/            领域实体 + AuditLog 审计支撑表
+├── repositories/      数据访问（CRUD/聚合/分页/审计）
+├── services/          业务规则 + 应用服务（search/announcement/home/dashboard/audit）
 ├── modules/           蓝图视图（只做参数解析、服务调用、渲染）
 ├── forms/             WTForms 表单校验
 └── utils/             常量/契约/表驱动/拼音/时段解析/分页
+migrations/            Flask-Migrate 迁移（初始结构 + audit_logs）
+deploy/                Gunicorn / Nginx / systemd 生产配置示例
 ```
 
-生产入口为 `wsgi.py`；工程化说明见 `docs/15-工程化改进与质量门禁.md`。
+生产入口为 `wsgi.py`；工程化说明见 `docs/15`，迁移/审计/部署见 `docs/16`。
 
 ## 生成设计图与实验报告
 
@@ -105,6 +114,7 @@ python scripts/generate_experiment_reports.py   # 重新生成 10 份 Word 报�
 | 13 | 表驱动编程实践 |
 | 14 | 静态测试与代码审查记录 |
 | 15 | 工程化改进与质量门禁 |
+| 16 | 生产部署、数据库迁移与审计日志 |
 | — | `docs/schema.sql` 数据库建表脚本 |
 | — | `docs/diagrams/` 设计图（10 张 PNG，按教材符号绘制） |
 

@@ -98,13 +98,52 @@ def test_keyword_with_xss_payload_is_escaped(client, app):
     assert "&lt;script&gt;" in body
 
 
-def test_keyword_percent_is_treated_as_wildcard(client, app):
-    """已知缺陷 DEF-001：LIKE 未转义 %，关键词中的 % 被当作通配符，
-    导致搜索结果被扩大（等价于"返回全部"）。此处固化当前实际行为。"""
+def test_keyword_percent_is_literal(client, app):
+    """DEF-001 回归：关键词中的 % 只匹配字面量，不再被 LIKE 当作通配符。
+
+    修复前该用例会返回全部服务；修复后只有名称/简介真正包含 % 的服务命中。
+    """
     from app.extensions import db
 
-    db.session.add_all([make_service("服务甲"), make_service("服务乙")])
+    db.session.add_all([
+        make_service("服务甲"),
+        make_service("服务乙"),
+        make_service("折扣100%服务"),
+    ])
     db.session.commit()
-    resp = client.get("/services/?keyword=" + "%")
+
+    resp = client.get("/services/", query_string={"keyword": "%"})
     body = resp.get_data(as_text=True)
-    assert "服务甲" in body and "服务乙" in body   # 实际：全部返回（预期：无匹配）
+    assert resp.status_code == 200
+    assert "折扣100%服务" in body
+    assert "服务甲" not in body and "服务乙" not in body
+
+
+def test_keyword_underscore_is_literal(client, app):
+    """DEF-001 同类边界：LIKE 的 _ 通配符也必须转义。"""
+    from app.extensions import db
+
+    db.session.add_all([
+        make_service("普通服务"),
+        make_service("下划线_服务"),
+    ])
+    db.session.commit()
+
+    resp = client.get("/services/", query_string={"keyword": "_"})
+    body = resp.get_data(as_text=True)
+    assert "下划线_服务" in body
+    assert "普通服务" not in body
+
+
+def test_keyword_backslash_is_literal(client, app):
+    """转义字符本身也应作为普通字符处理，不破坏查询。"""
+    from app.extensions import db
+
+    db.session.add_all([make_service("反斜杠\\服务"), make_service("普通服务")])
+    db.session.commit()
+
+    resp = client.get("/services/", query_string={"keyword": "\\"})
+    body = resp.get_data(as_text=True)
+    assert resp.status_code == 200
+    assert "反斜杠\\服务" in body
+    assert "普通服务" not in body

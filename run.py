@@ -47,7 +47,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _existing_counts() -> dict[str, int]:
     """统计库中现有业务数据，用于 --force-reset 前给出代价提示。"""
-    from app.models import Announcement, Appointment, Feedback, ServiceItem, User
+    from app.models import Announcement, Appointment, AuditLog, Feedback, ServiceItem, User
 
     return {
         "users": db.session.scalar(select(func.count()).select_from(User)),
@@ -55,6 +55,7 @@ def _existing_counts() -> dict[str, int]:
         "appointments": db.session.scalar(select(func.count()).select_from(Appointment)),
         "announcements": db.session.scalar(select(func.count()).select_from(Announcement)),
         "feedbacks": db.session.scalar(select(func.count()).select_from(Feedback)),
+        "audit_logs": db.session.scalar(select(func.count()).select_from(AuditLog)),
     }
 
 

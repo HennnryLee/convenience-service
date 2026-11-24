@@ -19,7 +19,7 @@ from flask.cli import with_appcontext
 from sqlalchemy import func, inspect, select
 
 from app.extensions import db
-from app.models import Announcement, Appointment, Feedback, ServiceItem, User
+from app.models import Announcement, Appointment, AuditLog, Feedback, ServiceItem, User
 from app.seed_data import seed_demo_data
 from app.services.auth_service import register_user, validate_registration
 
@@ -31,6 +31,7 @@ def _counts() -> dict[str, int]:
         "appointments": db.session.scalar(select(func.count()).select_from(Appointment)),
         "announcements": db.session.scalar(select(func.count()).select_from(Announcement)),
         "feedbacks": db.session.scalar(select(func.count()).select_from(Feedback)),
+        "audit_logs": db.session.scalar(select(func.count()).select_from(AuditLog)),
     }
 
 
@@ -71,7 +72,7 @@ def create_admin_command(username: str, email: str, password: str) -> None:
 def check_db_command() -> None:
     """自检：连接、表结构、各表行数。"""
     tables = set(inspect(db.engine).get_table_names())
-    expected = {"users", "services", "appointments", "announcements", "feedbacks"}
+    expected = {"users", "services", "appointments", "announcements", "feedbacks", "audit_logs"}
     missing = sorted(expected - tables)
     if missing:
         raise click.ClickException(f"缺少数据表：{', '.join(missing)}，请先执行 init-db")

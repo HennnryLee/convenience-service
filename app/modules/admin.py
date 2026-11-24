@@ -1,19 +1,23 @@
 """后台管理模块（蓝图 admin）：服务管理、用户管理、预约管理、公告发布。"""
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import Config
+from app.extensions import db
 from app.forms import AnnouncementForm, AppointmentStatusForm, ServiceForm, UserSearchForm
 from app.repositories import (
     AnnouncementRepository,
     AppointmentRepository,
+    AuditLogRepository,
     FeedbackRepository,
     ServiceRepository,
     UserRepository,
 )
+from app.services import audit_service
 from app.services.appointment_service import auto_complete_due, change_status
 from app.services.dashboard_service import get_dashboard_stats
-from app.utils.constants import APPOINTMENT_STATUS_TEXT
+from app.utils.constants import APPOINTMENT_STATUS_TEXT, AUDIT_ACTION_TEXT
 from app.utils.decorators import admin_required
 from app.utils.pagination import parse_choice, parse_page
 
@@ -75,9 +79,17 @@ def edit_service(service_id=None):
             return render_template("admin/service_form.html", form=form, service=service)
         if service:
             ServiceRepository.update(service, **payload)
+            audit_service.record(
+                "service.update", "service", service.id,
+                {"name": payload["name"], "category": payload["category"]},
+            )
             flash("服务信息已更新。", "success")
         else:
-            ServiceRepository.create(**payload)
+            created = ServiceRepository.create(**payload)
+            audit_service.record(
+                "service.create", "service", created.id,
+                {"name": payload["name"], "category": payload["category"]},
+            )
             flash("服务已创建。", "success")
         return redirect(url_for("admin.services"))
     return render_template("admin/service_form.html", form=form, service=service)
@@ -91,6 +103,7 @@ def toggle_service(service_id):
         return redirect(url_for("admin.services"))
     new_status = "offline" if service.is_online else "online"
     ServiceRepository.set_status(service, new_status)
+    audit_service.record("service.toggle", "service", service.id, {"status": new_status})
     flash(f"服务已{'下架' if new_status == 'offline' else '上架'}。", "success")
     return redirect(url_for("admin.services"))
 
@@ -114,6 +127,10 @@ def toggle_user(user_id):
         flash("不能禁用当前登录的管理员账号。", "danger")
     else:
         UserRepository.set_active(user, not user.is_active)
+        audit_service.record(
+            "user.toggle", "user", user.id,
+            {"username": user.username, "active": user.is_active},
+        )
         flash(f"用户 {user.username} 已{'启用' if user.is_active else '禁用'}。", "success")
     return redirect(url_for("admin.users"))
 
@@ -138,7 +155,13 @@ def update_appointment_status(appointment_id):
     if appointment is None:
         flash("预约不存在。", "warning")
     elif form.validate_on_submit():
+        old_status = appointment.status
         ok, message = change_status(appointment, form.status.data)
+        if ok:
+            audit_service.record(
+                "appointment.status", "appointment", appointment.id,
+                {"from": old_status, "to": appointment.status},
+            )
         flash(message, "success" if ok else "danger")
     else:
         flash("提交信息无效，请重试。", "danger")
@@ -154,16 +177,41 @@ def feedbacks():
     return render_template("admin/feedbacks.html", pagination=pagination)
 
 
+# ---------------------------------------------------------------- 审计日志（只读）
+@admin_bp.route("/audit-logs")
+def audit_logs():
+    """管理员查看审计日志；只读页面，不提供修改/删除入口。"""
+    action = parse_choice(request.args.get("action"), AUDIT_ACTION_TEXT)
+    page = parse_page(request.args.get("page"))
+    try:
+        pagination = AuditLogRepository.list_logs(action=action, page=page, per_page=PER_PAGE)
+    except SQLAlchemyError:
+        # 旧库尚未执行 audit_logs 迁移时，给运维可理解的提示，而不是 500。
+        db.session.rollback()
+        flash("审计日志表尚未初始化，请先执行数据库迁移（见 docs/16）。", "warning")
+        pagination = None
+    return render_template(
+        "admin/audit_logs.html",
+        pagination=pagination,
+        action=action,
+        actions=AUDIT_ACTION_TEXT,
+    )
+
+
 # ---------------------------------------------------------------- 公告发布
 @admin_bp.route("/announcements/new", methods=["GET", "POST"])
 def new_announcement():
     form = AnnouncementForm()
     if form.validate_on_submit():
-        AnnouncementRepository.create(
+        announcement = AnnouncementRepository.create(
             title=form.title.data.strip(),
             content=form.content.data.strip(),
             author_id=current_user.id,
             is_published=bool(form.is_published.data),
+        )
+        audit_service.record(
+            "announcement.create", "announcement", announcement.id,
+            {"title": announcement.title},
         )
         flash("公告已发布。", "success")
         return redirect(url_for("announcements.list_announcements"))

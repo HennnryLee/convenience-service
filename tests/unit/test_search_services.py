@@ -134,3 +134,17 @@ def test_legacy_search_services_alias_returns_pagination(service_factory):
     pagination = search_services(keyword="别名")
     assert pagination is not None
     assert pagination.total == 1
+
+
+def test_user_search_escapes_like_wildcards(app, user_factory):
+    """后台用户搜索与前台服务搜索保持同一转义语义。"""
+    from app.repositories import UserRepository
+
+    user_factory(username="normaluser")
+    user_factory(username="percentuser", real_name="百分号%用户")
+    user_factory(username="underscoreuser", real_name="下划线_用户")
+
+    assert UserRepository.search(keyword="%").total == 1
+    assert UserRepository.search(keyword="_").total == 1
+    assert UserRepository.search(keyword="%").items[0].real_name == "百分号%用户"
+    assert UserRepository.search(keyword="_").items[0].real_name == "下划线_用户"

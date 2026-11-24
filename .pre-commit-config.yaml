@@ -5,4 +5,4 @@ repos:
     hooks:
       - id: ruff
         args: [--fix]
-        files: ^(app|tests|scripts)/.*\.py$|^(run|seed)\.py$
+        files: ^(app|tests|scripts|deploy)/.*\.py$|^(run|seed|wsgi)\.py$

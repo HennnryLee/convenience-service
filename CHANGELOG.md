@@ -3,6 +3,28 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循语义化版本。课程实验阶段的提交同时记录在 `docs/11-交付清单.md`。
 
+## [1.2.0] - 2026-11-24
+
+### 新增
+- **Flask-Migrate/Alembic 版本化迁移**：`migrations/` 两个版本（初始结构、audit_logs），
+  `scripts/check_migration.py` 在临时库上演练迁移链，CI 增加迁移步骤，`docs/16` 说明现有库升级路径。
+- **管理员审计日志**：`AuditLog` 模型 / `AuditLogRepository` / `audit_service.record`，
+  后台 `/admin/audit-logs` 只读页面，覆盖服务增改/上下架、用户启停、预约状态、公告发布六类动作；
+  审计失败降级，不阻断主业务。
+- **生产部署配置**：`deploy/gunicorn.conf.py`、`deploy/nginx.conf.example`、
+  `deploy/convenience.service`、`requirements-prod.txt`。
+- **健康检查**：`GET /healthz` 返回数据库可用性，供 Nginx/监控探针使用。
+- 测试补充审计日志、健康检查、迁移脚本与 DEF-001 回归，用例增至 548 条。
+
+### 修复
+- **DEF-001 关闭**：服务/用户/公告三处搜索统一改用 `contains(autoescape=True)`，
+  `%`、`_` 按字面量匹配，覆盖 `%`/`_`/`\` 的回归用例；缺陷状态由 Open 迁移到 Close。
+- 后台审计页面只读、按动作筛选；旧库缺审计表时给出部署提示。
+
+### 变更
+- `run.py` / `check-db` 的统计与缺表检查纳入 `audit_logs`。
+- 生产依赖单独拆到 `requirements-prod.txt`；`pyproject.toml` 增加 `prod` 可选依赖。
+
 ## [1.1.0] - 2026-11-24
 
 ### 新增

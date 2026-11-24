@@ -5,11 +5,13 @@
     User 1───* Feedback   *───1 ServiceItem
     Appointment 1───0..1 Feedback（组合：一条预约最多一条评价）
     User 1───* Announcement（聚合：公告可独立于作者存在）
+    AuditLog *───0..1 User（审计支撑表：只追加，不参与领域规则）
 """
 from .announcement import Announcement
 from .appointment import Appointment
+from .audit_log import AuditLog
 from .feedback import Feedback
 from .service import ServiceItem
 from .user import User
 
-__all__ = ["User", "ServiceItem", "Appointment", "Announcement", "Feedback"]
+__all__ = ["User", "ServiceItem", "Appointment", "Announcement", "Feedback", "AuditLog"]

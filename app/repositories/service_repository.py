@@ -60,9 +60,11 @@ class ServiceRepository(BaseRepository):
         if category:
             stmt = stmt.where(ServiceItem.category == category)
         if keyword:
-            pattern = f"%{keyword}%"
+            # contains(autoescape=True) 会转义 % 和 _，并自动加 ESCAPE 子句：
+            # 用户输入的 % 只匹配字面量 %，不再被 LIKE 当作“匹配任意字符”。
             stmt = stmt.where(
-                ServiceItem.name.like(pattern) | ServiceItem.description.like(pattern)
+                ServiceItem.name.contains(keyword, autoescape=True)
+                | ServiceItem.description.contains(keyword, autoescape=True)
             )
         if sort == "popular":
             stmt = stmt.outerjoin(Appointment).group_by(ServiceItem.id)

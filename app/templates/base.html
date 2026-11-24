@@ -19,6 +19,7 @@
                消费者功能（预约、评价）只对普通用户开放，避免角色职责混淆（DEF-010）。 #}
             {% if current_user.is_authenticated and current_user.is_admin %}
                 <a class="nav-feature" href="{{ url_for('admin.dashboard') }}">后台管理</a>
+                <a href="{{ url_for('admin.audit_logs') }}">审计日志</a>
                 <a href="{{ url_for('main.index') }}">首页</a>
                 <a href="{{ url_for('services.list_services') }}">服务查询</a>
                 <a href="{{ url_for('announcements.list_announcements') }}">公告资讯</a>

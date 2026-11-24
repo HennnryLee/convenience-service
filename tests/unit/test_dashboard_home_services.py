@@ -67,6 +67,22 @@ def test_announcement_search_keyword_and_no_match(app, announcement):
     assert "没有找到相关公告" in missing.message
 
 
+def test_announcement_search_escapes_like_wildcards(app, admin_user):
+    db.session.add_all([
+        Announcement(title="普通公告", content="正文", author_id=admin_user.id, is_published=True),
+        Announcement(title="折扣100%公告", content="正文", author_id=admin_user.id, is_published=True),
+        Announcement(title="下划线_公告", content="正文", author_id=admin_user.id, is_published=True),
+    ])
+    db.session.commit()
+
+    percent = search_announcements_page(keyword="%")
+    underscore = search_announcements_page(keyword="_")
+    assert percent.pagination.total == 1
+    assert percent.pagination.items[0].title == "折扣100%公告"
+    assert underscore.pagination.total == 1
+    assert underscore.pagination.items[0].title == "下划线_公告"
+
+
 def test_announcement_keyword_over_limit(app):
     outcome = search_announcements_page(keyword="a" * 51)
     assert outcome.pagination is None
