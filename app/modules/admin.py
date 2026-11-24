@@ -5,7 +5,13 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from app.config import Config
 from app.extensions import db
-from app.forms import AnnouncementForm, AppointmentStatusForm, ServiceForm, UserSearchForm
+from app.forms import (
+    AdminResetPasswordForm,
+    AnnouncementForm,
+    AppointmentStatusForm,
+    ServiceForm,
+    UserSearchForm,
+)
 from app.repositories import (
     AnnouncementRepository,
     AppointmentRepository,
@@ -14,7 +20,7 @@ from app.repositories import (
     ServiceRepository,
     UserRepository,
 )
-from app.services import audit_service
+from app.services import audit_service, auth_service
 from app.services.appointment_service import auto_complete_due, change_status
 from app.services.dashboard_service import get_dashboard_stats
 from app.utils.constants import APPOINTMENT_STATUS_TEXT, AUDIT_ACTION_TEXT
@@ -133,6 +139,31 @@ def toggle_user(user_id):
         )
         flash(f"用户 {user.username} 已{'启用' if user.is_active else '禁用'}。", "success")
     return redirect(url_for("admin.users"))
+
+
+@admin_bp.route("/users/<int:user_id>/reset-password", methods=["GET", "POST"])
+def reset_password(user_id):
+    """管理员为普通用户设置临时密码（课程级找回密码，不发送邮件）。"""
+    user = UserRepository.get(user_id)
+    if user is None:
+        flash("用户不存在。", "warning")
+        return redirect(url_for("admin.users"))
+    if user.role != "user":
+        flash("仅支持重置普通用户的密码；管理员请通过个人中心或 CLI 维护。", "warning")
+        return redirect(url_for("admin.users"))
+
+    form = AdminResetPasswordForm(target_username=user.username)
+    if form.validate_on_submit():
+        ok, message = auth_service.reset_user_password(user, form.password.data)
+        if ok:
+            audit_service.record(
+                "user.reset_password", "user", user.id,
+                {"username": user.username},
+            )
+            flash(message, "success")
+            return redirect(url_for("admin.users"))
+        flash(message, "danger")
+    return render_template("admin/reset_password.html", form=form, target_user=user)
 
 
 # ---------------------------------------------------------------- 预约管理

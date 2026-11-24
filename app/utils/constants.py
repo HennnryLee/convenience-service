@@ -82,6 +82,7 @@ AUDIT_ACTION_TEXT = {
     "service.update": "编辑服务",
     "service.toggle": "服务上下架",
     "user.toggle": "用户启用/禁用",
+    "user.reset_password": "重置用户密码",
     "appointment.status": "预约状态变更",
     "announcement.create": "发布公告",
 }

@@ -4,13 +4,22 @@ from wtforms import (
     BooleanField,
     DecimalField,
     IntegerField,
+    PasswordField,
     SelectField,
     StringField,
     SubmitField,
     TextAreaField,
 )
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import (
+    DataRequired,
+    EqualTo,
+    Length,
+    NumberRange,
+    Optional,
+    ValidationError,
+)
 
+from app.services.password_policy import validate_password
 from app.utils.constants import APPOINTMENT_STATUS_TEXT, SERVICE_CATEGORIES
 
 
@@ -61,3 +70,35 @@ class AppointmentStatusForm(FlaskForm):
 class UserSearchForm(FlaskForm):
     keyword = StringField("关键词", validators=[Optional()])
     submit = SubmitField("搜索")
+
+
+class AdminResetPasswordForm(FlaskForm):
+    """管理员为普通用户设置临时密码。
+
+    管理员永远看不到原密码；只输入新密码两次。密码规则复用用户注册时的
+    validate_password（长度、字母+数字、空格、不能与用户名相同）。
+    """
+
+    password = PasswordField(
+        "临时密码",
+        validators=[DataRequired(message="请输入临时密码。")],
+        render_kw={"autocomplete": "new-password"},
+    )
+    confirm = PasswordField(
+        "确认临时密码",
+        validators=[
+            DataRequired(message="请再次输入临时密码。"),
+            EqualTo("password", message="两次输入的密码不一致。"),
+        ],
+        render_kw={"autocomplete": "new-password"},
+    )
+    submit = SubmitField("确认重置")
+
+    def __init__(self, target_username=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.target_username = target_username
+
+    def validate_password(self, field):
+        errors = validate_password(field.data or "", username=self.target_username)
+        if errors:
+            raise ValidationError("；".join(errors))

@@ -20,6 +20,9 @@
             <td>{{ user.role_text }}</td>
             <td><span class="badge {{ 'badge-online' if user.is_active else 'badge-cancelled' }}">{{ '正常' if user.is_active else '已禁用' }}</span></td>
             <td>
+                {% if user.role == 'user' %}
+                    <a class="btn btn-sm" href="{{ url_for('admin.reset_password', user_id=user.id) }}">重置密码</a>
+                {% endif %}
                 <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" class="inline-form" data-confirm="确定要{{ '禁用' if user.is_active else '启用' }}用户 {{ user.username }} 吗？">
                     {{ csrf_input() }}
                     <button class="btn btn-sm btn-outline" type="submit">{{ '禁用' if user.is_active else '启用' }}</button>

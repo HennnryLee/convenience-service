@@ -80,3 +80,25 @@ def update_profile(user, email=None, phone=None, real_name=None):
     return UserRepository.update(
         user, email=email, phone=phone, real_name=real_name
     )
+
+
+def reset_user_password(user, new_password):
+    """管理员为普通用户设置临时密码（课程级找回密码）。
+
+    规则：
+      - 只允许普通用户：管理员账号属于平台提供方，密码应通过 profile/CLI 维护；
+      - 复用注册时的密码策略（长度、字母+数字、空格、不能与用户名相同）；
+      - 不接收/不展示旧密码，明文不落库；
+      - 调用方负责写审计日志。
+    返回 (ok, message)。
+    """
+    if user is None:
+        return False, "用户不存在。"
+    if getattr(user, "role", None) != "user":
+        return False, "仅支持重置普通用户的密码。"
+    errors = validate_password(new_password, username=user.username)
+    if errors:
+        return False, "；".join(errors)
+    user.set_password(new_password)
+    UserRepository.save(user)
+    return True, f"用户 {user.username} 的密码已重置，请将临时密码告知本人并提醒登录后修改。"
