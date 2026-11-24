@@ -22,7 +22,7 @@
             <td>{{ appt.contact_name }}（{{ appt.contact_phone }}）</td>
             <td>{{ status_badge(appt.status) }}</td>
             <td>
-                {% if appt.status in ['pending', 'confirmed'] %}
+                {% if appt.status == 'pending' or (appt.status == 'confirmed' and not appt.is_started) %}
                     <form method="post" action="{{ url_for('appointments.cancel', appointment_id=appt.id) }}" class="inline-form" data-confirm="确定取消这条预约吗？取消后该时段名额将释放。">
                         {{ csrf_input() }}
                         <button class="btn btn-sm btn-danger" type="submit">取消预约</button>

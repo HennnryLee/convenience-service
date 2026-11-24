@@ -37,7 +37,7 @@ flask --app "app:create_app()" db upgrade       # 全新库用版本化迁移建
 ## 运行测试
 
 ```bash
-pytest                                           # 全部测试（576 条）
+pytest                                           # 全部测试（580 条）
 pytest -m unit                                   # 按层：unit / functional / integration / system
 pytest --cov=app --cov-branch --cov-report=term-missing
 python -m ruff check app tests scripts run.py seed.py wsgi.py
@@ -49,7 +49,7 @@ python scripts/check_migration.py                # 在临时库上演练 Alembic
 
 | 指标 | 结果 |
 | --- | --- |
-| 自动化用例 | 576（unit 357 / functional 136 / integration 33 / system 50） |
+| 自动化用例 | 580（unit 357 / functional 140 / integration 33 / system 50） |
 | 语句覆盖 / 分支覆盖 | 100% / 100%（CI 门槛 98%） |
 | ruff / 静态分析 | 0 问题 / 59 文件 0 问题 |
 | 插装 / 变异 | 27/27 = 100% / 12/12 = 100% |

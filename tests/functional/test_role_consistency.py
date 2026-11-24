@@ -6,7 +6,7 @@
   - 普通用户不能在预约时段开始后取消，管理员可处理异常；
   - 消费者页面与后台页面互不越权。
 """
-from datetime import datetime, time
+from datetime import date, datetime, time, timedelta
 
 from app.extensions import db
 from app.services.appointment_service import cancel_appointment
@@ -58,6 +58,22 @@ def test_user_cannot_cancel_confirmed_after_slot_started(
     assert appointment.status == "confirmed"
 
 
+def test_user_cannot_cancel_past_confirmed(
+    app, normal_user, service, appointment_factory
+):
+    appointment = appointment_factory(
+        normal_user,
+        service,
+        appointment_date=date.today() - timedelta(days=1),
+        status="confirmed",
+    )
+    ok, message = cancel_appointment(appointment, normal_user)
+    assert ok is False
+    assert "已开始" in message
+    db.session.refresh(appointment)
+    assert appointment.status == "confirmed"
+
+
 def test_admin_can_cancel_confirmed_after_slot_started(
     app, normal_user, admin_user, service, appointment_factory
 ):
@@ -70,6 +86,55 @@ def test_admin_can_cancel_confirmed_after_slot_started(
     assert ok is True, message
     db.session.refresh(appointment)
     assert appointment.status == "cancelled"
+
+
+def test_past_and_future_started_flags(app, normal_user, service, appointment_factory):
+    past = appointment_factory(
+        normal_user,
+        service,
+        appointment_date=date.today() - timedelta(days=1),
+        status="confirmed",
+    )
+    future = appointment_factory(normal_user, service, status="confirmed")
+    assert past.is_started is True
+    assert future.is_started is False
+
+
+def test_today_started_flag_uses_slot_time(
+    monkeypatch, normal_user, service, appointment_factory
+):
+    class FixedDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime.combine(date.today(), time(10, 0))
+
+    monkeypatch.setattr("app.models.appointment.datetime", FixedDateTime)
+    started = appointment_factory(
+        normal_user, service, appointment_date=date.today(), slot="09:00-10:00",
+        status="confirmed",
+    )
+    later = appointment_factory(
+        normal_user, service, appointment_date=date.today(), slot="14:00-15:00",
+        status="confirmed",
+    )
+    assert started.is_started is True
+    assert later.is_started is False
+
+
+def test_past_confirmed_appointment_hides_cancel_button(
+    client, normal_user, service, appointment_factory, monkeypatch
+):
+    appointment_factory(
+        normal_user,
+        service,
+        appointment_date=date.today() - timedelta(days=1),
+        status="confirmed",
+    )
+    # 关掉自动办结，让过去日期的记录保持 confirmed，专门验证模板是否隐藏取消按钮
+    monkeypatch.setattr("app.modules.appointments.auto_complete_due", lambda **kwargs: 0)
+    _login(client, "zhangsan", "User@123")
+    body = client.get("/appointments/mine").get_data(as_text=True)
+    assert "data-confirm=\"确定取消这条预约吗" not in body
 
 
 def test_admin_consumer_pages_redirect_to_dashboard(client, admin_user):

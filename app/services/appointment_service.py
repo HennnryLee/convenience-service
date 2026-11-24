@@ -115,7 +115,10 @@ def cancel_appointment(appointment, operator, is_admin=False, now=None):
         return False, f"当前状态（{appointment.status_text}）不可取消。"
     if not is_admin and appointment.status == "confirmed":
         now = now or datetime.now()
-        if is_slot_started(appointment.appointment_date, appointment.time_slot, now):
+        # is_slot_started 只覆盖“今天”；历史日期的 confirmed 同样不能取消。
+        if appointment.appointment_date < now.date() or is_slot_started(
+            appointment.appointment_date, appointment.time_slot, now
+        ):
             return False, "预约时段已开始，不能取消；如已结束，系统会自动办结。"
     appointment.change_status("cancelled")
     AppointmentRepository.save(appointment)

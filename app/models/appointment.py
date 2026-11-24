@@ -55,6 +55,23 @@ class Appointment(db.Model):
 
         return status_text(self.status)
 
+    @property
+    def is_started(self):
+        """该预约时段是否已开始（用于“我的预约”是否展示取消按钮）。
+
+        注意：``is_slot_started`` 只判断“今天”，历史日期会返回 False；
+        对取消按钮而言，过去日期的预约同样已经无法取消，所以这里先判日期。
+        """
+        from app.utils.time_slots import now_minutes, slot_start
+
+        now = datetime.now()
+        if self.appointment_date < now.date():
+            return True
+        if self.appointment_date > now.date():
+            return False
+        start = slot_start(self.time_slot)
+        return start is not None and now_minutes(now) >= start
+
     def change_status(self, new_status):
         """修改状态（前置条件由调用方用 can_transition 校验；此处只做赋值与时间戳更新）。
 
