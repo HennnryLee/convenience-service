@@ -6,8 +6,11 @@
 <h2>服务查询</h2>
 
 <form class="search-bar" method="get" action="{{ url_for('services.list_services') }}" data-no-loading="true">
+    <label class="sr-only" for="keyword">搜索关键词</label>
     {{ form.keyword(class="form-control", placeholder="输入服务名称或关键词") }}
+    <label class="sr-only" for="category">服务分类</label>
     {{ form.category(class="form-control") }}
+    <label class="sr-only" for="sort">排序方式</label>
     {{ form.sort(class="form-control") }}
     <button class="btn btn-primary" type="submit">搜索</button>
 </form>
@@ -32,7 +35,7 @@
                     <span class="price">¥{{ service.price }}</span>
                 </div>
                 <p class="muted">{{ category_text(service.category) }} · 约 {{ service.duration_minutes }} 分钟 · 每时段 {{ service.daily_capacity }} 人</p>
-                <p>{{ service.summary if service.summary else service.description[:50] }}</p>
+                <p>{{ service.summary }}</p>
                 <a href="{{ url_for('services.detail', service_id=service.id) }}">查看详情 &rarr;</a>
             </div>
         {% endfor %}

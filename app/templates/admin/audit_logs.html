@@ -10,7 +10,8 @@
 </p>
 
 <form class="search-bar" method="get" action="{{ url_for('admin.audit_logs') }}" data-no-loading="true">
-    <select name="action" class="form-control select-inline">
+    <label class="sr-only" for="action">审计动作</label>
+    <select name="action" id="action" class="form-control select-inline">
         <option value="">全部动作</option>
         {% for code, text in actions.items() %}
             <option value="{{ code }}" {% if action == code %}selected{% endif %}>{{ text }}</option>

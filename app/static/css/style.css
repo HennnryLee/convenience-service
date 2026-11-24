@@ -24,6 +24,12 @@ body {
 
 .container { width: min(1140px, 92%); margin: 0 auto; }
 
+/* 仅供读屏软件读取的标签（视觉上不占位） */
+.sr-only {
+    position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+    overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
 /* 键盘用户跳过导航直达主内容（无障碍） */
 .skip-link {
     position: absolute; left: -9999px; top: 0; z-index: 100;
@@ -130,7 +136,10 @@ table.grid th { background: #f9fafb; }
 .pagination a, .pagination span { padding: 6px 12px; border: 1px solid var(--border);
                                   border-radius: 6px; background: #fff; text-decoration: none; color: var(--text); }
 .pagination .current { background: var(--primary); color: #fff; border-color: var(--primary); }
-.search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+.search-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.search-bar .form-control { flex: 1 1 200px; width: auto; }
+.search-bar select.form-control { flex: 0 1 180px; }
+.search-bar .btn { flex: 0 0 auto; }
 .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
 .stat { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 16px; text-align: center; }
 .stat .num { font-size: 26px; font-weight: 700; color: var(--primary); }
@@ -149,4 +158,7 @@ table.grid th { background: #f9fafb; }
     .hero { padding: 28px 18px; }
     .hero h1 { font-size: 22px; }
     table.grid { font-size: 13px; }
+    .search-bar .form-control { flex: 1 1 100%; }
+    .search-bar select.form-control { flex: 1 1 100%; }
+    .search-bar .btn { width: 100%; }
 }

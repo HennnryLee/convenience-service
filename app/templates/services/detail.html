@@ -18,10 +18,15 @@
     </p>
     <p>{{ service.description }}</p>
     <p>综合评分：{{ average_rating if average_rating is not none else '暂无评价' }}</p>
+    {% if not has_available_today %}
+        <div class="alert alert-info">今日已无可约时段，建议选择明天及以后；预约表单会默认带出最近的可约日期。</div>
+    {% endif %}
     {% if current_user.is_authenticated and current_user.role == 'admin' %}
         <span class="badge badge-cancelled">管理员账号用于后台管理，不可提交预约；如需预约请使用普通用户账号</span>
     {% else %}
-        <a class="btn btn-primary" href="{{ url_for('appointments.create', service_id=service.id) }}">立即预约</a>
+        <a class="btn btn-primary" href="{{ url_for('appointments.create', service_id=service.id) }}">
+            {{ '立即预约' if has_available_today else '选择其它日期' }}
+        </a>
     {% endif %}
 </section>
 

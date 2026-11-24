@@ -74,6 +74,8 @@ MAX_RATING = 5
 # 公告列表摘要截取长度
 ANNOUNCEMENT_SUMMARY_LENGTH = 60
 
+# 服务列表简介摘要截取长度
+SERVICE_SUMMARY_LENGTH = 50
 # ---------------- 审计动作文案（后台写操作留痕） ----------------
 AUDIT_ACTION_TEXT = {
     "service.create": "新增服务",

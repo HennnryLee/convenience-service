@@ -3,7 +3,7 @@
 设计：规则判定全部委托给 appointment_rules（纯函数），
 本模块只负责取数、拼装上下文、调用规则、写库 —— 职责单一，便于测试。
 """
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.service_repository import ServiceRepository
@@ -181,3 +181,16 @@ def get_slot_availability(service, appointment_date=None, now=None):
             }
         )
     return result
+
+
+def default_booking_date(service, now=None):
+    """给预约表单选一个默认日期：今天还有可约时段就用今天，否则用明天。
+
+    这样用户打开表单时不会默认落在"今天但全已过"的状态，减少一次提交后才发现错误。
+    """
+    now = now or datetime.now()
+    today = now.date()
+    availability = get_slot_availability(service, today, now=now)
+    if any(item["remaining"] > 0 and not item["past"] for item in availability):
+        return today
+    return today + timedelta(days=1)

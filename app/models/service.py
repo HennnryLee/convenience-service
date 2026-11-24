@@ -7,6 +7,7 @@ from datetime import datetime
 from sqlalchemy.orm import validates
 
 from app.extensions import db
+from app.utils.constants import SERVICE_SUMMARY_LENGTH
 from app.utils.pinyin import to_pinyin_key
 
 
@@ -67,6 +68,20 @@ class ServiceItem(db.Model):
     @property
     def is_online(self):
         return self.status == "online"
+
+    @property
+    def summary(self):
+        """列表页摘要：简介前 50 字；简介为空时给中性文案，模板不再直接切片。
+
+        修复：原先模板写 ``service.description[:50]``，而后台「服务简介」是选填，
+        一旦为 None 就会在列表页抛 TypeError，导致整页 500。
+        """
+        text = (self.description or "").strip()
+        if not text:
+            return "暂无简介"
+        return text[:SERVICE_SUMMARY_LENGTH] + (
+            "…" if len(text) > SERVICE_SUMMARY_LENGTH else ""
+        )
 
     @property
     def average_rating(self):

@@ -8,6 +8,13 @@
     document.addEventListener("submit", function (event) {
         var form = event.target;
         if (!form || form.dataset.noLoading === "true") { return; }
+
+        // 危险/不可逆操作先确认；消息放在 data-confirm，避免内联 onclick 被 CSP 拦截
+        if (form.dataset.confirm && !window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+            return;
+        }
+
         var btn = form.querySelector("button[type=submit], input[type=submit]");
         if (!btn || btn.disabled) { return; }
         btn.disabled = true;

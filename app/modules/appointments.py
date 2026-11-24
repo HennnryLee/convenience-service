@@ -1,4 +1,6 @@
 """在线预约模块（蓝图 appointments）：提交预约、查看我的预约、取消预约。"""
+from datetime import date, datetime, timedelta
+
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -9,8 +11,10 @@ from app.services.appointment_service import (
     auto_complete_due,
     cancel_appointment,
     create_appointment,
+    default_booking_date,
+    get_slot_availability,
 )
-from app.utils.constants import APPOINTMENT_STATUS_TEXT
+from app.utils.constants import APPOINTMENT_MAX_DAYS_AHEAD, APPOINTMENT_STATUS_TEXT
 from app.utils.decorators import consumer_only
 from app.utils.pagination import parse_choice, parse_page
 
@@ -31,6 +35,23 @@ def create(service_id):
         return redirect(url_for("services.list_services"))
 
     form = AppointmentForm()
+    if request.method == "GET":
+        # 预填个人资料，减少重复输入；默认日期避开“今天已全部过点”的尴尬状态。
+        form.contact_name.data = current_user.real_name or ""
+        form.contact_phone.data = current_user.phone or ""
+        now = datetime.now()
+        default_date = default_booking_date(service, now=now)
+        form.appointment_date.data = default_date
+        # 默认时段选第一个“未过且未满”的，而不是永远选 09:00。
+        for item in get_slot_availability(service, default_date, now=now):
+            if item["remaining"] > 0 and not item["past"]:
+                form.time_slot.data = item["slot"]
+                break
+        today = date.today()
+        form.appointment_date.render_kw = {
+            "min": today.isoformat(),
+            "max": (today + timedelta(days=APPOINTMENT_MAX_DAYS_AHEAD)).isoformat(),
+        }
     if form.validate_on_submit():
         appointment, errors = create_appointment(
             user=current_user,

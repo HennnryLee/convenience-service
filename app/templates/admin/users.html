@@ -5,6 +5,7 @@
 {% block content %}
 <h2>用户管理</h2>
 <form class="search-bar" method="get" action="{{ url_for('admin.users') }}" data-no-loading="true">
+    <label class="sr-only" for="keyword">搜索用户</label>
     {{ form.keyword(class="form-control", placeholder="用户名 / 姓名 / 邮箱") }}
     <button class="btn btn-primary" type="submit">搜索</button>
 </form>
@@ -19,7 +20,7 @@
             <td>{{ user.role_text }}</td>
             <td><span class="badge {{ 'badge-online' if user.is_active else 'badge-cancelled' }}">{{ '正常' if user.is_active else '已禁用' }}</span></td>
             <td>
-                <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" class="inline-form">
+                <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" class="inline-form" data-confirm="确定要{{ '禁用' if user.is_active else '启用' }}用户 {{ user.username }} 吗？">
                     {{ csrf_input() }}
                     <button class="btn btn-sm btn-outline" type="submit">{{ '禁用' if user.is_active else '启用' }}</button>
                 </form>

@@ -39,9 +39,13 @@ def get_service_detail(service_id, now=None):
     availability = get_slot_availability(service, now=now or datetime.now())
     feedbacks = FeedbackRepository.list_by_service(service_id, limit=5)
     rating = FeedbackRepository.average_rating(service_id)
+    has_available_today = any(
+        item["remaining"] > 0 and not item["past"] for item in availability
+    )
     return {
         "service": service,
         "availability": availability,
+        "has_available_today": has_available_today,
         "feedbacks": feedbacks,
         "average_rating": round(float(rating), 1) if rating is not None else None,
         "price_level": price_level(service.price),

@@ -173,7 +173,10 @@ def test_service_detail_hides_booking_button_for_admin(client, admin_user, servi
 def test_service_detail_shows_booking_button_for_normal_user(client, normal_user, service):
     _login(client, "zhangsan", "User@123")
     resp = client.get(f"/services/{service.id}")
-    assert "立即预约".encode() in resp.data
+    body = resp.get_data(as_text=True)
+    # 按钮文案随时段可用性变化（立即预约 / 选择其它日期），但入口必须存在
+    assert f"/appointments/create/{service.id}" in body
+    assert "立即预约" in body or "选择其它日期" in body
 
 
 # ---------------------------------------------------------------- 详情服务：注入当前时刻
