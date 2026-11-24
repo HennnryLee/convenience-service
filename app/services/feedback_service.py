@@ -21,7 +21,14 @@ def can_review(user, appointment):
 
 
 def create_feedback(user, appointment, rating, content=None):
-    """提交评价。前置条件：已通过 can_review。"""
+    """提交评价。前置条件：已通过 can_review。
+
+    纵深防御（DEF-010）：视图层已用 consumer_only 把管理员挡在评价页面之外，
+    服务层再拦一次，保证绕过视图直接调用写入口也无法以管理员身份评价。
+    管理员是服务提供方，评价是消费者侧的权利，二者不可混用。
+    """
+    if getattr(user, "role", None) == "admin":
+        return None, "管理员账号用于后台管理与服务发布，不可提交评价。"
     ok, reason = can_review(user, appointment)
     if not ok:
         return None, reason

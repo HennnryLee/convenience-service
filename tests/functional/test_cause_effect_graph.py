@@ -36,7 +36,10 @@ from app.extensions import db
 from app.models import Appointment, ServiceItem, User
 from app.services.appointment_service import create_appointment
 
-TODAY = date(2026, 11, 23)
+# 日期一律相对「今天」构造，避免用例随系统日期推移而失效：
+# 若写死某一天，跨天后 TOMORROW 会变成今天或过去，被「已开始时段不可约」规则正确拦截，
+# 导致判定表用例出现假失败（2026-11-24 实测 6 条失败）。测试必须与运行时刻无关。
+TODAY = date.today()
 TOMORROW = TODAY + timedelta(days=1)
 SLOT = "09:00-10:00"
 

@@ -15,7 +15,9 @@ from app.services.appointment_service import create_appointment, get_slot_availa
 from app.utils.constants import TIME_SLOTS
 from app.utils.contracts import ContractViolation
 
-DAY = date(2026, 11, 23)
+# 基准日期取「今天」：写死某一天会在跨天后被「过去日期」校验正确拦截，造成假失败。
+# 「时段是否已开始」一律由显式注入的 LATE / EARLY 决定，与真实运行时刻无关，用例可重复执行。
+DAY = date.today()
 LATE = datetime.combine(DAY, time(18, 4))     # 所有时段都已开始
 EARLY = datetime.combine(DAY, time(8, 30))    # 09:00 时段尚未开始
 

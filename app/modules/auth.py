@@ -49,7 +49,13 @@ def login():
         login_user(user, remember=form.remember.data)
         flash(f"欢迎回来，{user.username}！", "success")
         next_url = request.args.get("next")
-        return redirect(next_url if _is_safe_next(next_url) else url_for("main.index"))
+        if _is_safe_next(next_url):
+            return redirect(next_url)
+        # 角色化落地页：管理员的主任务是管理与发布，登录后直接进入后台概览（DEF-010）。
+        # next 参数优先级最高，保留"跳回原目标页"的行为，也保证开放重定向防护不变。
+        if user.is_admin:
+            return redirect(url_for("admin.dashboard"))
+        return redirect(url_for("main.index"))
     return render_template("auth/login.html", form=form)
 
 

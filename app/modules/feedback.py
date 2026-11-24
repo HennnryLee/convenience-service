@@ -7,12 +7,14 @@ from app.config import Config
 from app.forms import FeedbackForm
 from app.repositories import AppointmentRepository, FeedbackRepository
 from app.services.feedback_service import create_feedback, list_reviewable_appointments
+from app.utils.decorators import consumer_only
 
 feedback_bp = Blueprint("feedback", __name__)
 
 
 @feedback_bp.route("/create", methods=["GET", "POST"])
 @login_required
+@consumer_only
 def create():
     reviewable = list_reviewable_appointments(current_user)
     if not reviewable:
@@ -38,6 +40,7 @@ def create():
 
 @feedback_bp.route("/mine")
 @login_required
+@consumer_only
 def my_feedback():
     page = request.args.get("page", 1, type=int)
     pagination = FeedbackRepository.list_by_user(

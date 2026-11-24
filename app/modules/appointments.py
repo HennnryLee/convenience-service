@@ -5,7 +5,12 @@ from flask_login import current_user, login_required
 from app.config import Config
 from app.forms import AppointmentForm
 from app.repositories import AppointmentRepository, ServiceRepository
-from app.services.appointment_service import cancel_appointment, create_appointment
+from app.services.appointment_service import (
+    auto_complete_due,
+    cancel_appointment,
+    create_appointment,
+)
+from app.utils.decorators import consumer_only
 
 appointments_bp = Blueprint("appointments", __name__)
 
@@ -46,7 +51,11 @@ def create(service_id):
 
 @appointments_bp.route("/mine")
 @login_required
+@consumer_only
 def my_appointments():
+    # 展示前先按时段自动办结：服务时间结束的「已确认」预约自动变为「已完成」（DEF-011）
+    # 只办结本人的预约，避免一次页面访问触发全站写操作
+    auto_complete_due(user_id=current_user.id)
     status = request.args.get("status") or None
     page = request.args.get("page", 1, type=int)
     pagination = AppointmentRepository.list_by_user(
@@ -59,6 +68,7 @@ def my_appointments():
 
 @appointments_bp.route("/<int:appointment_id>/cancel", methods=["POST"])
 @login_required
+@consumer_only
 def cancel(appointment_id):
     appointment = AppointmentRepository.get(appointment_id)
     ok, message = cancel_appointment(appointment, current_user)

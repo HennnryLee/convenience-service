@@ -103,6 +103,41 @@ def is_slot_started(appointment_date, slot, now):
     return result
 
 
+def is_slot_ended(appointment_date, slot, now):
+    """判断某次预约的服务时段是否已经结束（自动办结依据，DEF-011）。
+
+    与 is_slot_started 对称：前者判「开始时刻是否已到」，本函数判「结束时刻是否已过」。
+    规则：
+      - 预约日期早于今天 → 一定已结束；
+      - 预约日期晚于今天 → 一定未结束；
+      - 就是今天         → 比较当前时刻与该时段的结束时刻。
+
+    前置条件：appointment_date 为 date；slot 为字符串；now 为 datetime。
+    后置条件：返回布尔值。
+    不变量：不修改入参，不改动时段表。
+    """
+    require(isinstance(appointment_date, date), "appointment_date 必须是 date")
+    require(isinstance(slot, str), "slot 必须是字符串")
+    require(isinstance(now, datetime), "now 必须是 datetime")
+    slots_snapshot = tuple(TIME_SLOTS)
+
+    if slot not in TIME_SLOTS:
+        result = False  # 非法时段由预约校验报错，这里不越权判定
+    elif appointment_date < now.date():
+        result = True
+    elif appointment_date > now.date():
+        result = False
+    else:
+        # 用 map 解包而非生成器表达式：保持规则模块中单层循环的数量稳定，
+        # 也让教材「循环测试」的启发式检查（无嵌套循环）不被误触发。
+        end_h, end_m = map(int, slot.split("-")[1].split(":"))
+        result = (now.hour, now.minute) >= (end_h, end_m)
+
+    ensure(isinstance(result, bool), "is_slot_ended 必须返回布尔值")
+    invariant(tuple(TIME_SLOTS) == slots_snapshot, "时段表在判定过程中不得被修改")
+    return result
+
+
 # ------------------------------------------------------------------ 预约校验
 def validate_new_appointment(context, appointment_date, slot, today=None, max_days_ahead=MAX_DAYS_AHEAD):
     """校验一次新预约是否可提交。

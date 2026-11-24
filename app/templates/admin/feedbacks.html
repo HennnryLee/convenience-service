@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pagination_widget %}
+{% block title %}评价查看{% endblock %}
+
+{% block content %}
+<h2>评价查看</h2>
+<p class="muted">
+    管理员是<strong>服务/平台提供方</strong>，是被评价的一方，因此本页为<strong>只读</strong>页面，
+    只提供查看，不提供「提交评价」「我的评价」等消费者入口。评价只能由完成服务预约的普通用户提交。
+</p>
+
+{% if pagination.items %}
+<table class="grid">
+    <tr><th>编号</th><th>用户</th><th>服务</th><th>评分</th><th>内容</th><th>时间</th></tr>
+    {% for fb in pagination.items %}
+        <tr>
+            <td>#{{ fb.id }}</td>
+            <td>{{ fb.user.username }}</td>
+            <td>{{ fb.service.name }}</td>
+            <td>{{ fb.rating }} 星 · {{ fb.rating_text }}</td>
+            <td>{{ fb.content or '—' }}</td>
+            <td>{{ fb.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{{ pagination_widget(pagination, 'admin.feedbacks') }}
+{% else %}
+<div class="panel"><p>暂无用户评价。</p></div>
+{% endif %}
+{% endblock %}

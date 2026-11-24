@@ -13,7 +13,7 @@ from app.repositories import (
     ServiceRepository,
     UserRepository,
 )
-from app.services.appointment_service import change_status
+from app.services.appointment_service import auto_complete_due, change_status
 from app.utils.decorators import admin_required
 
 admin_bp = Blueprint("admin", __name__)
@@ -127,6 +127,10 @@ def toggle_user(user_id):
 # ---------------------------------------------------------------- 预约管理
 @admin_bp.route("/appointments")
 def appointments():
+    # 展示前先自动办结：服务时段已结束的「已确认」预约自动变为「已完成」（DEF-011）
+    completed_count = auto_complete_due()
+    if completed_count:
+        flash(f"已按服务时段自动办结 {completed_count} 条到期预约（已确认 → 已完成）。", "info")
     status = request.args.get("status") or None
     page = request.args.get("page", 1, type=int)
     pagination = AppointmentRepository.list_all(status=status, page=page, per_page=PER_PAGE)
@@ -145,6 +149,15 @@ def update_appointment_status(appointment_id):
     else:
         flash("提交信息无效，请重试。", "danger")
     return redirect(url_for("admin.appointments"))
+
+
+# ---------------------------------------------------------------- 评价查看（只读）
+@admin_bp.route("/feedbacks")
+def feedbacks():
+    """管理员以服务提供方身份查看消费者的反馈，页面不提供任何提交/修改入口。"""
+    page = request.args.get("page", 1, type=int)
+    pagination = FeedbackRepository.list_all(page=page, per_page=PER_PAGE)
+    return render_template("admin/feedbacks.html", pagination=pagination)
 
 
 # ---------------------------------------------------------------- 公告发布

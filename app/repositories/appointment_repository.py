@@ -96,6 +96,22 @@ class AppointmentRepository(BaseRepository):
         return list(db.session.scalars(stmt))
 
     @staticmethod
+    def list_confirmed_due(target_date: date):
+        """列出「已确认」且预约日期不晚于目标日期的预约，供自动办结批处理使用。
+
+        只取 confirmed：待确认的预约尚未受理，不应被时间直接推进为已完成。
+        """
+        stmt = (
+            select(Appointment)
+            .where(
+                Appointment.status == "confirmed",
+                Appointment.appointment_date <= target_date,
+            )
+            .order_by(Appointment.id)
+        )
+        return list(db.session.scalars(stmt))
+
+    @staticmethod
     def count_by_status(status=None):
         stmt = select(func.count()).select_from(Appointment)
         if status:

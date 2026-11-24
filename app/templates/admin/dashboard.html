@@ -14,10 +14,12 @@
 
 <section class="panel">
     <h3>快捷入口</h3>
+    <p class="muted">管理员的主任务是管理与发布：以下均为管理视角页面，不含预约/评价等消费者操作。</p>
     <p>
         <a class="btn btn-sm" href="{{ url_for('admin.services') }}">服务管理</a>
         <a class="btn btn-sm" href="{{ url_for('admin.appointments') }}">预约管理</a>
         <a class="btn btn-sm" href="{{ url_for('admin.users') }}">用户管理</a>
+        <a class="btn btn-sm" href="{{ url_for('admin.feedbacks') }}">评价查看（只读）</a>
         <a class="btn btn-sm btn-outline" href="{{ url_for('admin.new_announcement') }}">发布公告</a>
     </p>
 </section>

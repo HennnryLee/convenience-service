@@ -11,6 +11,7 @@ from app.services.appointment_rules import (
     AppointmentContext,
     can_cancel,
     can_transition,
+    is_slot_ended,
     is_slot_started,
     remaining_capacity,
     validate_new_appointment,
@@ -125,6 +126,36 @@ def change_status(appointment, new_status):
     appointment.change_status(new_status)
     AppointmentRepository.save(appointment)
     return True, f"预约状态已更新为「{appointment.status_text}」。"
+
+
+def auto_complete_due(now=None, user_id=None):
+    """把「已确认且服务时段已结束」的预约自动办结为已完成（DEF-011）。
+
+    教材依据：状态迁移应能由业务事件触发。用户提出「项目预约时间一结束就
+    应该是完成了」，因此把「时段结束」作为 confirmed → completed 的自动触发条件，
+    管理员无需再手动逐条点「已完成」。
+
+    设计要点：
+      1. 纯函数判定 + 服务层编排，时刻可注入（now），便于固定时钟单测；
+      2. 只处理 confirmed，pending 未受理的预约不受影响（不越权推进）；
+      3. 走 change_status 复用表驱动状态机，不绕过 can_transition 约束；
+      4. 惰性触发：在展示预约列表的视图里调用，无需额外定时任务；
+      5. user_id 可限定范围：用户查看自己的列表时只办结本人的预约，
+         避免一次页面访问触发全站写操作（最小权限）。
+
+    返回：实际被办结的预约条数。
+    """
+    if now is None:
+        now = datetime.now()
+    count = 0
+    for appointment in AppointmentRepository.list_confirmed_due(now.date()):
+        if user_id is not None and appointment.user_id != user_id:
+            continue
+        if is_slot_ended(appointment.appointment_date, appointment.time_slot, now):
+            ok, _ = change_status(appointment, "completed")
+            if ok:
+                count += 1
+    return count
 
 
 def get_slot_availability(service, appointment_date=None, now=None):

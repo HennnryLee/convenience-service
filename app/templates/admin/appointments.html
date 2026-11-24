@@ -5,8 +5,22 @@
 {% block content %}
 <h2>预约管理</h2>
 <p class="muted">这里列出的是<strong>全体用户</strong>的预约，管理员在此做审批与办结，不是自己预约。
-状态流转：待确认 → 已确认（受理）→ 已完成（服务办结后由管理员确认，为终态）；
-待确认/已确认均可取消。只有「已完成」的预约，用户才能提交评价。</p>
+管理员账号是服务/平台提供方，不参与预约、评价等消费者操作；相关入口已从顶部导航移除。</p>
+
+<section class="panel">
+    <h3>「已完成」在哪里确认？</h3>
+    <p>
+        <strong>不需要管理员逐条确认</strong>：服务时段一旦结束（例如 <code>09:00-10:00</code> 到 10:00），
+        系统会把该条「已确认」预约<strong>自动办结为「已完成」</strong>；打开本页或用户的「我的预约」页时即会刷新。
+    </p>
+    <p>
+        如需<strong>提前办结</strong>（服务提前做完）或处理异常，可在下表每行的
+        <strong>「推进状态」列</strong>把下拉框选为「已完成」，再点旁边的「更新」按钮 —— 这就是手动确认入口。
+        状态流转受表驱动状态机约束：待确认 → 已确认（受理）→ 已完成（终态）；
+        待确认/已确认均可取消；<strong>只有「已完成」的预约，用户才能提交评价</strong>。
+    </p>
+    <p class="muted">「已完成」是终态，不可回退、不可取消。待确认的预约即使时段已过也不会被自动推进，需先受理。</p>
+</section>
 <div class="category-nav">
     {% for code, text in [('', '全部'), ('pending', '待确认'), ('confirmed', '已确认'), ('completed', '已完成'), ('cancelled', '已取消')] %}
         <a class="badge {% if status == code %}badge-online{% endif %}" href="{{ url_for('admin.appointments', status=code) }}">{{ text }}</a>

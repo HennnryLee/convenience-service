@@ -47,6 +47,12 @@ class FeedbackRepository(BaseRepository):
         return list(db.session.scalars(stmt))
 
     @staticmethod
+    def list_all(page=1, per_page=10):
+        """后台只读评价列表：管理员查看消费者对服务的反馈（不提供提交入口）。"""
+        stmt = select(Feedback).order_by(Feedback.created_at.desc())
+        return db.paginate(stmt, page=page, per_page=per_page, error_out=False)
+
+    @staticmethod
     def average_rating(service_id):
         return db.session.scalar(
             select(func.avg(Feedback.rating)).where(Feedback.service_id == service_id)

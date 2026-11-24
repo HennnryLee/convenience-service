@@ -13,19 +13,26 @@
     <div class="container header-inner">
         <a class="logo" href="{{ url_for('main.index') }}">便民服务平台</a>
         <nav class="nav">
-            <a href="{{ url_for('main.index') }}">首页</a>
-            <a href="{{ url_for('services.list_services') }}">服务查询</a>
-            <a href="{{ url_for('announcements.list_announcements') }}">公告资讯</a>
-            {% if current_user.is_authenticated %}
-                <a href="{{ url_for('appointments.my_appointments') }}">我的预约</a>
-                <a href="{{ url_for('feedback.my_feedback') }}">我的评价</a>
-                {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin.dashboard') }}">后台管理</a>
+            {# 角色化导航：管理员是服务/平台提供方，主任务是管理与发布；
+               消费者功能（预约、评价）只对普通用户开放，避免角色职责混淆（DEF-010）。 #}
+            {% if current_user.is_authenticated and current_user.is_admin %}
+                <a class="nav-feature" href="{{ url_for('admin.dashboard') }}">后台管理</a>
+                <a href="{{ url_for('main.index') }}">首页</a>
+                <a href="{{ url_for('services.list_services') }}">服务查询</a>
+                <a href="{{ url_for('announcements.list_announcements') }}">公告资讯</a>
+            {% else %}
+                <a href="{{ url_for('main.index') }}">首页</a>
+                <a href="{{ url_for('services.list_services') }}">服务查询</a>
+                <a href="{{ url_for('announcements.list_announcements') }}">公告资讯</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('appointments.my_appointments') }}">我的预约</a>
+                    <a href="{{ url_for('feedback.my_feedback') }}">我的评价</a>
                 {% endif %}
             {% endif %}
         </nav>
         <div class="user-area">
             {% if current_user.is_authenticated %}
+                {% if current_user.is_admin %}<span class="role-tag role-admin">管理员</span>{% endif %}
                 <span class="who">你好，{{ current_user.username }}</span>
                 <a class="btn btn-sm" href="{{ url_for('auth.profile') }}">个人中心</a>
                 <a class="btn btn-sm btn-outline" href="{{ url_for('auth.logout') }}">退出</a>
