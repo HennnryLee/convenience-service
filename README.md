@@ -37,7 +37,7 @@ flask --app "app:create_app()" db upgrade       # 全新库用版本化迁移建
 ## 运行测试
 
 ```bash
-pytest                                           # 全部测试（569 条）
+pytest                                           # 全部测试（576 条）
 pytest -m unit                                   # 按层：unit / functional / integration / system
 pytest --cov=app --cov-branch --cov-report=term-missing
 python -m ruff check app tests scripts run.py seed.py wsgi.py
@@ -49,7 +49,7 @@ python scripts/check_migration.py                # 在临时库上演练 Alembic
 
 | 指标 | 结果 |
 | --- | --- |
-| 自动化用例 | 569（unit 357 / functional 129 / integration 33 / system 50） |
+| 自动化用例 | 576（unit 357 / functional 136 / integration 33 / system 50） |
 | 语句覆盖 / 分支覆盖 | 100% / 100%（CI 门槛 98%） |
 | ruff / 静态分析 | 0 问题 / 59 文件 0 问题 |
 | 插装 / 变异 | 27/27 = 100% / 12/12 = 100% |
@@ -115,6 +115,7 @@ python scripts/generate_experiment_reports.py   # 重新生成 10 份 Word 报�
 | 14 | 静态测试与代码审查记录 |
 | 15 | 工程化改进与质量门禁 |
 | 16 | 生产部署、数据库迁移与审计日志 |
+| 17 | 角色与功能一致性矩阵（管理员/普通用户） |
 | — | `docs/schema.sql` 数据库建表脚本 |
 | — | `docs/diagrams/` 设计图（10 张 PNG，按教材符号绘制） |
 

@@ -131,6 +131,8 @@ def toggle_user(user_id):
         flash("用户不存在。", "warning")
     elif user.id == current_user.id:
         flash("不能禁用当前登录的管理员账号。", "danger")
+    elif user.role != "user":
+        flash("仅支持启用/禁用普通用户；管理员账号请通过个人中心或 CLI 维护。", "warning")
     else:
         UserRepository.set_active(user, not user.is_active)
         audit_service.record(

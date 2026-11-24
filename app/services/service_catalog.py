@@ -34,7 +34,8 @@ def get_service_detail(service_id, now=None):
     （阶梯访问与索引访问的结果，供页面直接展示，避免模板里写 if/elif）。
     """
     service = ServiceRepository.get(service_id)
-    if service is None:
+    if service is None or not service.is_online:
+        # 下架服务与不存在一样不对外展示；管理员在后台服务管理页查看/编辑。
         return None
     availability = get_slot_availability(service, now=now or datetime.now())
     feedbacks = FeedbackRepository.list_by_service(service_id, limit=5)

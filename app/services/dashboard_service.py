@@ -13,7 +13,8 @@ def get_dashboard_stats(today=None):
     """后台首页统计（今日 = 可注入日期，避免测试依赖系统时钟）。"""
     today = today or date.today()
     return {
-        "users": UserRepository.count(),
+        # 「注册用户」是消费者口径，不含管理员账号；管理员不是平台的服务对象。
+        "users": UserRepository.count(role="user"),
         "services": ServiceRepository.count_by_status("online"),
         "appointments": AppointmentRepository.count_by_status(),
         "pending": AppointmentRepository.count_by_status("pending"),

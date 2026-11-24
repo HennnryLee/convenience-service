@@ -99,11 +99,13 @@ def create_appointment(user, service_id, appointment_date, time_slot, contact_na
     return appointment, []
 
 
-def cancel_appointment(appointment, operator, is_admin=False):
+def cancel_appointment(appointment, operator, is_admin=False, now=None):
     """取消预约。
 
     前置条件：appointment 存在；operator 为当前登录用户。
     权限：本人可取消自己的预约，管理员可取消任意预约。
+    时间规则：普通用户的「已确认」预约在时段开始后不可取消；管理员例外，
+    便于处理异常。待确认预约不占用服务时间，仍允许用户撤回。
     """
     if appointment is None:
         return False, "预约记录不存在。"
@@ -111,6 +113,10 @@ def cancel_appointment(appointment, operator, is_admin=False):
         return False, "只能取消本人的预约。"
     if not can_cancel(appointment.status):
         return False, f"当前状态（{appointment.status_text}）不可取消。"
+    if not is_admin and appointment.status == "confirmed":
+        now = now or datetime.now()
+        if is_slot_started(appointment.appointment_date, appointment.time_slot, now):
+            return False, "预约时段已开始，不能取消；如已结束，系统会自动办结。"
     appointment.change_status("cancelled")
     AppointmentRepository.save(appointment)
     return True, "预约已取消。"

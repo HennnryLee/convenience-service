@@ -23,7 +23,8 @@ def test_dashboard_stats_aggregates_all_counts(
     appointment_factory(user, online, status="confirmed")
 
     stats = get_dashboard_stats(today=date(2026, 1, 1))
-    assert stats["users"] == 2
+    # 「注册用户」是消费者口径：只统计普通用户，不含管理员账号
+    assert stats["users"] == 1
     assert stats["services"] == 1
     assert stats["appointments"] == 2
     assert stats["pending"] == 1
