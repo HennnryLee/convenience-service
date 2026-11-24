@@ -11,10 +11,13 @@
 - **管理员审计日志**：`AuditLog` 模型 / `AuditLogRepository` / `audit_service.record`，
   后台 `/admin/audit-logs` 只读页面，覆盖服务增改/上下架、用户启停、预约状态、公告发布六类动作；
   审计失败降级，不阻断主业务。
-- **生产部署配置**：`deploy/gunicorn.conf.py`、`deploy/nginx.conf.example`、
-  `deploy/convenience.service`、`requirements-prod.txt`。
+- **生产部署配置**：`deploy/gunicorn.conf.py`、`deploy/nginx.conf.template`、
+  `deploy/convenience.service.template`、`deploy/render_configs.py`、`requirements-prod.txt`。
+- **运维增强**：审计归档 `app/services/audit_archive.py` + `scripts/archive_audit_logs.py`；
+  夜间任务 `.github/workflows/nightly.yml`（迁移演练/全量回归/Locust/兼容性）；
+  部署模板按环境变量渲染，避免提交真实域名/证书路径。
 - **健康检查**：`GET /healthz` 返回数据库可用性，供 Nginx/监控探针使用。
-- 测试补充审计日志、健康检查、迁移脚本与 DEF-001 回归，用例增至 548 条。
+- 测试补充审计日志、健康检查、迁移脚本与 DEF-001 回归，用例增至 551 条。
 
 ### 修复
 - **DEF-001 关闭**：服务/用户/公告三处搜索统一改用 `contains(autoescape=True)`，

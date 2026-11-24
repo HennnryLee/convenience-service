@@ -37,7 +37,7 @@ flask --app "app:create_app()" db upgrade       # 全新库用版本化迁移建
 ## 运行测试
 
 ```bash
-pytest                                           # 全部测试（548 条）
+pytest                                           # 全部测试（551 条）
 pytest -m unit                                   # 按层：unit / functional / integration / system
 pytest --cov=app --cov-branch --cov-report=term-missing
 python -m ruff check app tests scripts run.py seed.py wsgi.py
@@ -49,12 +49,12 @@ python scripts/check_migration.py                # 在临时库上演练 Alembic
 
 | 指标 | 结果 |
 | --- | --- |
-| 自动化用例 | 548（unit 354 / functional 111 / integration 33 / system 50） |
+| 自动化用例 | 551（unit 357 / functional 111 / integration 33 / system 50） |
 | 语句覆盖 / 分支覆盖 | 100% / 100%（CI 门槛 98%） |
-| ruff / 静态分析 | 0 问题 / 58 文件 0 问题 |
+| ruff / 静态分析 | 0 问题 / 59 文件 0 问题 |
 | 插装 / 变异 | 27/27 = 100% / 12/12 = 100% |
 | CI | GitHub Actions，Python 3.10/3.12 双版本；ruff + 静态分析 + 迁移演练 + 分支覆盖率 |
-| 生产就绪 | `migrations/` 版本化迁移、`/healthz` 健康检查、`audit_logs` 审计日志、`deploy/` Gunicorn/Nginx/systemd |
+| 生产就绪 | `migrations/` 版本化迁移、`/healthz` 健康检查、`audit_logs` 审计与归档、`deploy/` 模板渲染、`.github/workflows/nightly.yml` 夜间巡检 |
 
 ## 项目结构（分层）
 

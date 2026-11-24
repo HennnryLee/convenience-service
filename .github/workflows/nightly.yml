@@ -1,0 +1,102 @@
+name: nightly
+
+on:
+  schedule:
+    # 每天 02:00 Asia/Shanghai（UTC 18:00）
+    - cron: "0 18 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: 全量回归 + 迁移演练
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: 迁移演练
+        run: python scripts/check_migration.py
+      - name: 全量测试 + 覆盖率
+        run: |
+          python -m pytest \
+            --cov=app --cov-branch \
+            --cov-report=term-missing \
+            --cov-report=xml:reports/coverage.xml
+      - name: 静态检查
+        run: |
+          python -m ruff check app tests scripts deploy run.py seed.py wsgi.py
+          python scripts/static_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-quality
+          path: |
+            reports/coverage.xml
+            reports/static_analysis.md
+          if-no-files-found: warn
+
+  smoke:
+    name: 性能冒烟 + 兼容性
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+      - name: 初始化临时演示库
+        env:
+          FLASK_CONFIG: production
+          SECRET_KEY: nightly-only-secret-key-0123456789
+          DATABASE_URL: sqlite:///./instance/nightly.db
+        run: python run.py --init-db --seed
+      - name: 启动服务
+        env:
+          FLASK_CONFIG: production
+          SECRET_KEY: nightly-only-secret-key-0123456789
+          DATABASE_URL: sqlite:///./instance/nightly.db
+        run: |
+          mkdir -p reports
+          nohup python run.py --config production --port 5050 > reports/nightly_server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:5050/healthz; then break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:5050/healthz
+      - name: Locust 20 用户 30 秒冒烟
+        run: |
+          locust -f scripts/locustfile.py --headless \
+            -u 20 -r 5 -t 30s \
+            --host http://127.0.0.1:5050 \
+            --csv reports/nightly_perf
+      - name: 兼容性检查（无浏览器时自动跳过）
+        env:
+          BASE_URL: http://127.0.0.1:5050
+        run: python scripts/compatibility_check.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: nightly-smoke
+          path: |
+            reports/nightly_perf_stats.csv
+            reports/nightly_perf_failures.csv
+            reports/nightly_server.log
+            reports/compatibility_result.md
+          if-no-files-found: warn
