@@ -57,4 +57,4 @@ app\utils\validators.py                          17      2      4      2    81% 
 TOTAL                                          1269     67    272     39    93%
 Coverage HTML written to dir reports/coverage_html
 Coverage XML written to file reports/coverage.xml
-382 passed in 50.63s
+382 passed in 64.71s (0:01:04)

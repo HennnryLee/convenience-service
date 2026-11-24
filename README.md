@@ -28,6 +28,21 @@ pytest tests/system                              # 系统测试（端到端/安�
 pytest --cov=app --cov-report=term-missing       # 覆盖率
 ```
 
+## 生成设计图与实验报告
+
+按两本教材符号绘制的 10 张设计图由 `scripts/draw_diagrams.py` 生成，报告生成器会把它们
+嵌入对应章节。修改图或报告后按以下顺序重建：
+
+```bash
+python scripts/draw_diagrams.py                 # 生成 docs/diagrams/*.png（10 张）
+python scripts/generate_experiment_reports.py   # 重新生成 10 份 Word 报告（含图）
+```
+
+> 图按教材符号绘制：UML 类图（教材 3.3.1）、E-R 图 / 关系图 / 数据库设计六阶段
+> （教材 8.1.2、8.3）、模块结构图（教材 2.3）、页面结构图（教材 5.1 / 5.3）、
+> 控制流图与因果图 / 状态迁移图（测试教材 11.3 / 10.3 / 10.4）。
+> 若图片缺失，报告生成器会直接报错并提示先运行绘图脚本。
+
 ## 文档索引
 | 编号 | 文档 |
 | --- | --- |
@@ -44,3 +59,4 @@ pytest --cov=app --cov-report=term-missing       # 覆盖率
 | 10 | 部署与运行说明 |
 | 11 | 交付清单 |
 | — | `docs/schema.sql` 数据库建表脚本 |
+| — | `docs/diagrams/` 设计图（10 张 PNG，按教材符号绘制） |

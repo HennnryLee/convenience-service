@@ -20,6 +20,10 @@ DATE = "2026年10月29日"
 OUT_CONSTRUCT = r"E:/张洪老师实验/软件构造/实验报告"
 OUT_TEST = r"E:/张洪老师实验/软件测试/实验报告"
 
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 按教材符号绘制的设计图，由 scripts/draw_diagrams.py 生成
+DIAGRAMS = os.path.join(ROOT, "docs", "diagrams")
+
 
 def _style(doc):
     normal = doc.styles["Normal"]
@@ -112,6 +116,27 @@ def _table(doc, header, rows, widths=None):
     return table
 
 
+def _img(doc, filename, caption, width_cm=16.2):
+    """插入按教材符号绘制的设计图（居中）+ 图号说明。"""
+    from docx.shared import Cm
+    path = os.path.join(DIAGRAMS, filename)
+    if not os.path.exists(path):
+        raise FileNotFoundError(
+            "设计图缺失：%s（请先运行 python scripts/draw_diagrams.py）" % path)
+    para = doc.add_paragraph()
+    para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    para.paragraph_format.space_before = Pt(6)
+    para.paragraph_format.space_after = Pt(2)
+    para.add_run().add_picture(path, width=Cm(width_cm))
+    cap = doc.add_paragraph()
+    cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run = cap.add_run(caption)
+    run.font.size = Pt(9)
+    run.font.color.rgb = RGBColor(0x47, 0x55, 0x69)
+    cap.paragraph_format.space_after = Pt(8)
+    return para
+
+
 def build(path, course, title, sections):
     doc = Document()
     _style(doc)
@@ -126,6 +151,8 @@ def build(path, course, title, sections):
             _bullets(doc, block[1])
         elif kind == "t":
             _table(doc, block[1], block[2])
+        elif kind == "img":
+            _img(doc, block[1], block[2], block[3] if len(block) > 3 else 16.2)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     doc.save(path)
     print("[OK]", path)
@@ -190,7 +217,7 @@ CONSTRUCT.append((
         ("p", "Windows 11 / Python 3.12 / Flask 3.1 / pytest 9.2 / pytest-cov / Git。测试使用内存数据库。"),
         ("h", "三、实验内容与步骤", 1),
         ("b", [
-            "功能分解：拆出 6 个业务模块 + 3 个支撑层，绘制模块结构图（Mermaid）。",
+            "功能分解：拆出 6 个业务模块 + 3 个支撑层，按教材 2.3 绘制模块结构图（图 2-1）。",
             "耦合分析：逐条列出模块间依赖，判定数据耦合/标记耦合/公共耦合/内容耦合。",
             "选定在线预约模块为详细设计对象：函数划分、数据结构（frozen dataclass、表驱动状态机）、算法选择。",
             "TDD 红灯：先写 33 条用例并运行，确认全部失败（ModuleNotFoundError）。",
@@ -199,13 +226,21 @@ CONSTRUCT.append((
         ]),
         ("h", "四、构造成果", 1),
         ("t", ["成果", "说明"],
-             [["模块结构图", "docs/04 含分层调用关系图与依赖矩阵"],
+             [["模块结构图", "见本节图 2-1；按教材 2.3.3 标注数据耦合/公共耦合，无控制耦合与内容耦合"],
               ["耦合类型判定", "表现层→业务层为数据耦合（弱）；业务层→常量表为公共耦合（弱）；"
                            "无内容耦合；已消除控制耦合"],
               ["核心模块", "app/services/appointment_rules.py（6 个函数）+ password_policy.py"],
               ["数据结构", "AppointmentContext（frozen dataclass）、APPOINTMENT_TRANSITIONS（dict→set 表驱动）"],
               ["TDD 记录", "红灯 2 errors → 绿灯 33 passed in 0.79s"],
               ["Git 提交", "86fccb9  feat(appointment): 以TDD方式构造预约管理核心模块与密码策略，含33条单元测试"]]),
+        ("img", "01_module_structure.png",
+         "图 2-1  便民服务平台模块结构图（教材 2.3：高内聚、低耦合；箭头为调用/依赖方向）"),
+        ("p", "教材 2.3 把模块独立性拆成「内聚性」与「耦合性」两个对立又相关的指标，"
+              "并要求概要设计力求增强内聚、降低耦合。图 2-1 按此把系统分为表现层、业务层、数据层与支撑层："
+              "表现层 6 个蓝图只通过参数与返回值调用业务层（**数据耦合**）；各层共享 utils.constants 的"
+              "表驱动常量表（**公共耦合**）；规则层通过 AppointmentContext 接收数据而非读取全局状态，"
+              "因此不存在控制耦合，任何模块也不直接改写另一模块内部数据，不存在内容耦合。"
+              "每个模块只承担一类职责（功能内聚），可独立测试、独立替换。"),
         ("h", "五、问题与解决", 1),
         ("t", ["问题", "现象", "解决方法"],
              [["业务规则与数据库耦合", "规则函数内直接查询，测试必须起数据库",
@@ -230,7 +265,8 @@ CONSTRUCT.append((
         ("p", "Windows 11 / Python 3.12 / Flask-SQLAlchemy 3.1（SQLAlchemy 2.x）/ SQLite / pytest 9.2。"),
         ("h", "三、实验内容与步骤", 1),
         ("b", [
-            "识别 5 个核心领域对象：User、ServiceItem、Appointment、Announcement、Feedback，绘制类模型图。",
+            "识别 5 个核心领域对象：User、ServiceItem、Appointment、Announcement、Feedback，"
+            "按教材 3.3.1 的 UML 符号绘制类模型图（图 3-1、图 3-2）。",
             "说明类关系：组合（User-Appointment）、关联（Service-Appointment）、聚合（User-Announcement）、"
             "一对一（Appointment-Feedback）、泛化（User 继承 UserMixin）。",
             "编写契约式设计表：为每个关键方法明确前置条件、后置条件、不变量。",
@@ -243,15 +279,91 @@ CONSTRUCT.append((
         ]),
         ("h", "四、构造成果", 1),
         ("t", ["成果", "说明"],
-             [["领域类模型", "docs/06 类图 + 关系说明 + 10 个方法的契约表"],
-              ["数据库表结构", "users / services / appointments / announcements / feedbacks，"
-                           "含 CHECK 约束与索引，docs/07 + docs/schema.sql"],
+             [["领域类模型", "见本节图 3-1（UML 类图）、图 3-2（类关系图）；按教材 3.3.1 符号绘制"],
+              ["数据库表结构", "见本节 4.2~4.4：E-R 图、关系模式/关系图、5 张表清单与三类完整性约束；"
+                           "DDL 见 docs/07 + docs/schema.sql"],
               ["范式论证", "1NF 原子值；2NF 单列代理主键无部分依赖；3NF 无传递依赖"],
               ["数据访问层", "5 个 Repository 封装全部 ORM 操作"],
               ["表驱动", "状态机、分类、排序、星级文案 + 价格档位、耗时档位 共 6 类查表替代 if/elif"],
               ["契约式编程", "app/utils/contracts.py：require/ensure/invariant 三类断言，可整体关闭"],
               ["单元测试", "55 passed（含密码哈希、唯一性、分页排序、容量统计、级联删除）"],
               ["Git 提交", "ee6762b  feat(models): 领域模型、数据库表结构、数据访问层与持久化单元测试"]]),
+        ("h", "4.1 领域类模型图（教材 3.3.1）", 2),
+        ("p", "教材 3.3.1 指出，面向对象设计普遍采用「描述程序静态结构的类图」与「描述动态行为的交互图」，"
+              "并规定：类用带类名、属性、操作的三层矩形表示，分隔线分离三层；可见性用 +（公用）、"
+              "-（私有）、#（保护）标注；类之间的关联用一根线表示，可带角色名、数目、方向和约束；"
+              "泛化是一端带空心三角形的连线，绘制时从子类指向父类；聚合的整体端用空心菱形，"
+              "组合的整体端用实心菱形。图 3-1、图 3-2 严格按这些符号绘制。"),
+        ("img", "02_class_diagram.png",
+         "图 3-1  五个领域类的 UML 类图（教材 3.3.1 图 3.2 符号）"),
+        ("img", "03_class_relations.png",
+         "图 3-2  领域类关系图（教材 3.3.1 图 3.3 符号）"),
+        ("p", "类关系判定（对应实验指导要求的「关联、聚合、组合、继承」四类）："
+              "**组合**：User—Appointment、User—Feedback、Appointment—Feedback，部分不能脱离整体存在，"
+              "删除用户时其预约与评价按 ORM 级联配置一并删除；"
+              "**聚合**：User—Announcement，公告可脱离作者独立存在（author_id 可空）；"
+              "**关联**：ServiceItem—Appointment、ServiceItem—Feedback，双方独立引用、以外键保障可追溯；"
+              "**泛化**：User 继承 Flask-Login 的 UserMixin，复用 is_authenticated 等认证接口。"
+              "图 3-2 采用教材所说的简化画法——「有时，为了表示程序中类之间的关系，"
+              "可以只用一个标示类名的矩形表示类」。"),
+        ("h", "4.2 数据库设计过程与概念结构设计（教材 8.3）", 2),
+        ("p", "实验指导要求「设计数据库表结构…满足第三范式，关系清晰，约束完整」。"
+              "教材 8.3 把数据库开发分为需求分析、概念结构设计、逻辑结构设计、物理结构设计、"
+              "数据库实施、运行维护六个阶段（图 8.9），并强调概念结构设计是「整个数据库设计的关键」，"
+              "其产物是 E-R 模型。本项目的数据库构造按这六阶段推进，各阶段产物见图 3-3。"),
+        ("img", "06_db_design_process.png",
+         "图 3-3  数据库设计的六个阶段（教材 8.3 图 8.9）"),
+        ("p", "E-R 图的符号严格遵循教材 8.3：「E」表示实体型，在 E-R 图中用矩形表示，矩形框内写明实体名；"
+              "属性用椭圆表示，并用无向边与相应实体连接；「R」表示联系，用菱形表示，"
+              "并用无向边分别与有关实体型连接，同时在无向边旁标记联系类型（1:1、1:n、m:n）。"
+              "本系统识别出 5 个实体型与 6 个联系（发起、被预约、发布、提交、被评价、产生），见图 3-4。"),
+        ("img", "04_er_diagram.png",
+         "图 3-4  数据库概念结构设计 E-R 图（教材 8.3 图 8.10 / 图 8.11 符号）"),
+        ("h", "4.3 逻辑结构设计：E-R 图向关系模式转换（教材 8.1.2、8.3）", 2),
+        ("p", "教材 8.3 给出 E-R 图向关系模型转换的三条规则："
+              "（1）1:1 联系可转为独立关系模式，也可与任意一端对应的关系模式合并；"
+              "（2）1:n 联系可转为独立关系模式，也可与 n 端合并（1 端主码加入 n 端成为外码）；"
+              "（3）m:n 联系必须转换为一个独立的关系模式，各实体的码组成该关系的码。"
+              "本系统只有 1:1 与 1:n 联系：Appointment—Feedback 的 1:1 联系并入 feedbacks"
+              "（appointment_id 唯一且为外码）；其余 1:n 联系均并入 n 端"
+              "（appointments.user_id / service_id、announcements.author_id、feedbacks.user_id / service_id），"
+              "因此无需引入独立联系表。"),
+        ("p", "教材 8.1.2 把关系模式形式化为 R(U, D, DOM, F)，简记为 R(U)，"
+              "并规定关系模型由关系数据结构、关系操作集合、关系完整性约束三部分组成。"
+              "本项目得到 5 个关系模式（主码加下划线）："
+              "**users**(id, username, …)、**services**(id, name, …)、"
+              "**appointments**(id, user_id, service_id, …)、**announcements**(id, author_id, …)、"
+              "**feedbacks**(id, appointment_id, …)。图 3-5 按教材图 8.1 的画法给出关系图："
+              "每个关系用一个矩形表示，关系的名字显示在矩形上方，矩形内列出各个属性，"
+              "主属性用下画线标出，外码之间用从参照关系的外码属性到被参照关系主属性的箭头表示。"),
+        ("img", "05_relation_schema.png",
+         "图 3-5  关系模式与关系图（教材 8.1.2、图 8.1 画法）"),
+        ("p", "三类完整性约束在 ORM 与 DDL 中逐条落地："
+              "**实体完整性**——5 张表均有非空且唯一的单列主码 id；"
+              "**参照完整性**——所有外码建立外键约束并指向实际存在的被参照主码；"
+              "**用户自定义完整性**——用 CHECK 约束 role、status、rating（1~5）、price≥0、"
+              "daily_capacity>0。范式方面：所有字段均为原子值（1NF）；"
+              "各表使用单列代理主键，不存在部分函数依赖（2NF）；"
+              "appointments 只存 user_id / service_id 而不冗余用户姓名与服务名称，"
+              "不存在传递依赖（3NF）。feedbacks 中 service_id 是为便于按服务统计评分的受控冗余，"
+              "因预约记录创建后服务不再变更而不产生更新异常。"),
+        ("h", "4.4 数据库表结构与数据持久化实现", 2),
+        ("t", ["关系（表）", "主码", "外码", "主要约束", "ORM 类"],
+             [["users", "id", "—", "username / email UNIQUE；role CHECK；is_active NOT NULL", "User"],
+              ["services", "id", "—", "name UNIQUE；price≥0；daily_capacity>0；status CHECK", "ServiceItem"],
+              ["appointments", "id", "user_id→users.id；service_id→services.id",
+               "status CHECK；复合索引 (service_id, appointment_date, time_slot)", "Appointment"],
+              ["announcements", "id", "author_id→users.id（可空）",
+               "title / content NOT NULL；created_at 索引", "Announcement"],
+              ["feedbacks", "id", "user_id→users.id；service_id→services.id；appointment_id→appointments.id",
+               "appointment_id UNIQUE（一预约一评价）；rating CHECK 1~5", "Feedback"]]),
+        ("p", "ORM 映射用 relationship + back_populates 建立双向关联："
+              "User→Appointment / Feedback 为一对多并带级联删除，Appointment→Feedback 为一对一"
+              "（uselist=False），Announcement→User 为可空多对一。数据访问层由 5 个 Repository 封装"
+              "全部 ORM 操作（继承 BaseRepository 复用 add / commit / count_all），"
+              "业务层与表现层均不直接构造查询。以用户模块与预约模块为例，"
+              "create / get_by_id / paginate / update / delete 及按状态与时段统计均有对应单元测试，"
+              "共 55 条数据层用例通过。DDL 脚本见 docs/schema.sql，表结构说明见 docs/07。"),
         ("h", "五、契约式编程实践（教材 4.3.2、4.9.3）", 1),
         ("p", "教材用「三个问题」总结契约：模块期望什么（前置条件）、保证什么（后置条件）、保持什么（不变式）。"
               "本项目把它实现为 app/utils/contracts.py 的三个断言函数，违约抛 ContractViolation"
@@ -300,7 +412,8 @@ CONSTRUCT.append((
         ("h", "三、实验内容与步骤", 1),
         ("b", [
             "角色与场景分析：游客、普通用户、管理员三类角色的典型操作流程。",
-            "页面结构设计：base.html 父模板 + 各业务子模板的继承层级与跳转逻辑（POST-Redirect-GET）。",
+            "页面结构设计：按教材 5.1/5.3 绘制页面结构设计图（图 4-1），给出 base.html 父模板 + "
+            "各业务子模板的继承层级与三角色跳转逻辑（POST-Redirect-GET）。",
             "实现注册/登录、服务查询（列表+详情）、在线预约三大核心页面。",
             "表单处理：5 类表单的字段校验规则与逐字段错误提示。",
             "会话与权限：Flask-Login 登录状态、@login_required、admin_required 装饰器、next 安全跳转。",
@@ -309,13 +422,24 @@ CONSTRUCT.append((
         ]),
         ("h", "四、构造成果", 1),
         ("t", ["成果", "说明"],
-             [["页面清单", "首页、服务查询、服务详情、在线预约、我的预约、公告列表/详情、"
+             [["页面结构设计图", "见本节图 4-1（教材 5.1/5.3）：模板继承层级 + 三角色跳转 + PRG 反馈机制"],
+              ["页面清单", "首页、服务查询、服务详情、在线预约、我的预约、公告列表/详情、"
                         "评价提交/列表、后台（概览/服务/用户/预约/公告）共 14 个页面"],
               ["交互原则落地", "一致性（统一父模板与宏）、简洁性、可反馈性、容错性、可控性"],
               ["表单校验", "注册/登录/预约/评价/服务维护 5 类，全部带 CSRF 令牌"],
               ["会话与权限", "user_loader + login_required + admin_required + 站内跳转白名单"],
               ["集成测试", "20 passed（注册6/登录与会话3/访问控制3/预约表单3/取消1/页面4…）"],
               ["Git 提交", "e5d1d4f  feat(web): 页面模板、表单校验、会话与权限管理，含20条集成测试"]]),
+        ("img", "07_page_structure.png",
+         "图 4-1  页面结构设计图（教材 5.1 程序功能的组织与呈现、5.3 交互设计基本过程）"),
+        ("p", "教材 5.1 讨论「多个功能的组织与呈现」，5.3 给出交互设计的基本过程与快速原型法。"
+              "图 4-1 左侧是 Jinja2 模板继承树：所有页面继承 base.html，子模板只覆盖 content 块，"
+              "因而导航、反馈区与页脚在全站保持一致（交互设计的一致性原则）；"
+              "右侧按游客、普通用户、管理员三类角色给出页面跳转逻辑——"
+              "普通用户走「查询→预约→评价」消费链路，管理员登录后直接落地后台管理、"
+              "只做管理与发布，两者入口互不混用。写操作一律采用 POST-Redirect-GET："
+              "提交成功重定向到结果页并 flash 成功提示，失败则原页保留输入并逐字段显示错误，"
+              "对应教材 5.2.5 的可反馈性与容错性原则。"),
         ("h", "五、静态测试与代码审查（教材 5.4）", 1),
         ("p", "教材把静态测试分为桌面检查、代码走查、正式审查、同行评审，并给出 Myers 七维度检查单。"
               "本实验对交互层代码逐项走查，按数据引用、数据声明、计算、判断、控制流程、接口、输入输出七个维度建立检查表。"),
@@ -430,7 +554,17 @@ TESTS.append((
               "因此对预约提交补充因果图法：先定义 8 个原因（C1 服务上架、C2 已选日期、C3 日期在 30 天内、"
               "C4 时段合法、C5 姓名≥2 字、C6 手机号合法、C7 无重复预约、C8 名额未满）与 7 个结果，"
               "标注 R（C3 要求 C2）、M（表单错误屏蔽业务规则）、E（成功与失败互斥）三类约束，"
-              "再转成判定表并逐列设计用例。"),
+              "再转成判定表并逐列设计用例。教材 10.3、10.4 的两种方法都以「图」为核心建模工具，"
+              "所绘制的因果图与状态迁移图分别见图 1-1、图 1-2。"),
+        ("img", "09_cause_effect_graph.png",
+         "图 1-1  在线预约提交的因果图（测试教材 10.3：原因、结果、逻辑门与 R/M/E 约束）"),
+        ("img", "10_state_transition.png",
+         "图 1-2  预约状态迁移图（测试教材 10.4 功能图法：状态迁移图 + 状态内局部判定表）"),
+        ("p", "因果图用 ∧（与）、¬（非）、∨（或）三种逻辑门连接原因与结果，"
+              "并以 R（要求）、M（屏蔽）、E（互斥）约束描述输入之间的相互制约；"
+              "功能图法则把预约状态机建模为「状态迁移图 + 状态内局部判定表」——"
+              "图中实线为合法迁移，虚线为被状态机拒绝的非法迁移，"
+              "每个状态对取消、推进、评价三个事件分别给出允许或拒绝的局部判定。"),
         ("t", ["判定表列", "C1~C8 取值", "期望结果", "验证点"],
              [["COL-1", "全为 1", "创建成功", "落库 + 可查询"],
               ["COL-2", "C1=0", "服务已下架", "下架服务被拒"],
@@ -475,7 +609,10 @@ TESTS.append((
               ["U5 cancel_appointment（取消预约）", "4", "4", "3 个判定 + 1，含 1 个复合条件"]]),
         ("p", "U5 的控制流图含 9 个结点、11 条边、3 个判定结点，用教材 11.3.2 的两种公式交叉验证："
               "V(G)=E−N+2=11−9+2=4，V(G)=P+1=3+1=4，区域数亦为 4，三者一致，"
-              "据此导出 4 条独立路径（记录不存在 / 非本人 / 状态不可取消 / 取消成功）并逐条设计用例。"),
+              "据此导出 4 条独立路径（记录不存在 / 非本人 / 状态不可取消 / 取消成功）并逐条设计用例。"
+              "按实验指导「绘制被测单元的程序流程图」的要求，依教材 11.3 的控制流图画法绘制如图 2-1。"),
+        ("img", "08_control_flow.png",
+         "图 2-1  被测单元 cancel_appointment 的程序控制流图（测试教材 11.3）"),
         ("h", "四、测试用例与执行结果", 1),
         ("t", ["覆盖类型", "用例要点", "结果"],
              [["语句覆盖", "U1~U5 每个可执行语句至少执行一次", "通过"],
