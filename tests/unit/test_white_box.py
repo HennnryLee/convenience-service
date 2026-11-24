@@ -11,7 +11,6 @@
 from datetime import date
 
 import pytest
-
 from app.services.appointment_rules import (
     AppointmentContext,
     can_transition,

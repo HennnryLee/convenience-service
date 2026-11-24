@@ -125,7 +125,7 @@ def test_i3_admin_status_change_reflected_to_user(client, normal_user, admin_use
     _login(client, "admin", "Admin@123")
     client.post(f"/admin/appointments/{appointment.id}/status",
                 data={"status": "confirmed"}, follow_redirects=True)
-    assert Appointment.query.get(appointment.id).status == "confirmed"
+    assert db.session.get(Appointment, appointment.id).status == "confirmed"
 
     client.get("/auth/logout")
     _login(client, "zhangsan", "User@123")
@@ -138,7 +138,7 @@ def test_i3_illegal_status_change_rejected(client, admin_user, appointment):
     _login(client, "admin", "Admin@123")
     client.post(f"/admin/appointments/{appointment.id}/status",
                 data={"status": "completed"}, follow_redirects=True)
-    assert Appointment.query.get(appointment.id).status == "pending"  # 未变更
+    assert db.session.get(Appointment, appointment.id).status == "pending"  # 未变更
 
 
 def test_i3_missing_parameters_rejected(client, admin_user, appointment):
@@ -146,7 +146,7 @@ def test_i3_missing_parameters_rejected(client, admin_user, appointment):
     _login(client, "admin", "Admin@123")
     resp = client.post(f"/admin/appointments/{appointment.id}/status", data={})
     assert resp.status_code in (200, 302)
-    assert Appointment.query.get(appointment.id).status == "pending"
+    assert db.session.get(Appointment, appointment.id).status == "pending"
 
 
 # ------------------------------------------------------------------ I-4

@@ -19,7 +19,7 @@
             <td>{{ user.role_text }}</td>
             <td><span class="badge {{ 'badge-online' if user.is_active else 'badge-cancelled' }}">{{ '正常' if user.is_active else '已禁用' }}</span></td>
             <td>
-                <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" style="display:inline">
+                <form method="post" action="{{ url_for('admin.toggle_user', user_id=user.id) }}" class="inline-form">
                     {{ csrf_input() }}
                     <button class="btn btn-sm btn-outline" type="submit">{{ '禁用' if user.is_active else '启用' }}</button>
                 </form>

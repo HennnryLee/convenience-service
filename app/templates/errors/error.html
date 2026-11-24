@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}{{ code }} · {{ title }}{% endblock %}
+{% block content %}
+<section class="panel text-center error-panel">
+    <p class="error-code">{{ code }}</p>
+    <h2>{{ title }}</h2>
+    <p>{{ message }}</p>
+    <div class="form-actions form-actions-center">
+        <a class="btn btn-primary" href="{{ url_for('main.index') }}">返回首页</a>
+        <a class="btn btn-outline" href="{{ url_for('services.list_services') }}">浏览服务</a>
+    </div>
+</section>
+{% endblock %}

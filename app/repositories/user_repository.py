@@ -3,7 +3,7 @@
 职责：封装全部针对 users 表的 ORM 操作，使业务层不直接出现查询构造代码。
 通用增删改查继承自 BaseRepository，本类只保留用户特有的查询。
 """
-from sqlalchemy import or_, select
+from sqlalchemy import func, or_, select
 
 from app.extensions import db
 from app.models.user import User
@@ -19,15 +19,20 @@ class UserRepository(BaseRepository):
 
     @staticmethod
     def get_by_email(email):
-        return db.session.scalar(select(User).where(User.email == email))
+        if not email:
+            return None
+        return db.session.scalar(select(User).where(User.email == email.strip().lower()))
 
     @staticmethod
     def get_by_login(login):
-        """支持用户名或邮箱登录。"""
+        """支持用户名或邮箱登录（邮箱按小写比较，用户名区分大小写）。"""
         if not login:
             return None
+        normalized = login.strip()
         return db.session.scalar(
-            select(User).where(or_(User.username == login, User.email == login))
+            select(User).where(
+                or_(User.username == normalized, User.email == normalized.lower())
+            )
         )
 
     @staticmethod
@@ -72,7 +77,7 @@ class UserRepository(BaseRepository):
 
     @staticmethod
     def count(role=None):
-        stmt = select(User)
+        stmt = select(func.count()).select_from(User)
         if role:
             stmt = stmt.where(User.role == role)
-        return db.session.scalar(select(db.func.count()).select_from(stmt.subquery()))
+        return db.session.scalar(stmt)

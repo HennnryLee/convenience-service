@@ -116,7 +116,7 @@ def main():
     with open(out, "w", encoding="utf-8") as f:
         f.write("# 静态程序分析报告（教材 5.4.7）\n\n")
         f.write(f"- 扫描范围：`app/` 共 {len(files)} 个 Python 文件\n")
-        f.write(f"- 检查项：函数长度、嵌套深度、裸 except、魔法数字、可变默认参数、print 残留、import *、TODO\n")
+        f.write("- 检查项：函数长度、嵌套深度、裸 except、魔法数字、可变默认参数、print 残留、import *、TODO\n")
         f.write(f"- 发现问题：{len(all_findings)} 处\n\n")
         if by_type:
             f.write("| 问题类型 | 数量 |\n| --- | --- |\n")

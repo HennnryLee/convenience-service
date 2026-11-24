@@ -8,7 +8,6 @@
 from datetime import date, datetime, time, timedelta
 
 import pytest
-
 from app.models import Appointment
 from app.services.appointment_rules import is_slot_started
 from app.services.appointment_service import create_appointment, get_slot_availability

@@ -54,7 +54,12 @@ class ServiceItem(db.Model):
 
         放在实体层而不是视图层，是为了让 seed、后台新建、后台编辑、测试造数
         等所有入口都自动生效 —— 避免"某条路径漏算拼音"导致排序静默退化。
+
+        同时在此处去掉名称首尾空白：唯一约束按去空白后的值比较，
+        否则 "身份证换领办理" 与 "身份证换领办理 " 会绕过重名校验。
         """
+        if isinstance(value, str):
+            value = value.strip()
         self.name_pinyin = to_pinyin_key(value)
         return value
 

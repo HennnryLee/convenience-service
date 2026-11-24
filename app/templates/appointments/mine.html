@@ -23,7 +23,7 @@
             <td>{{ status_badge(appt.status) }}</td>
             <td>
                 {% if appt.status in ['pending', 'confirmed'] %}
-                    <form method="post" action="{{ url_for('appointments.cancel', appointment_id=appt.id) }}" style="display:inline">
+                    <form method="post" action="{{ url_for('appointments.cancel', appointment_id=appt.id) }}" class="inline-form">
                         {{ csrf_input() }}
                         <button class="btn btn-sm btn-danger" type="submit">取消预约</button>
                     </form>

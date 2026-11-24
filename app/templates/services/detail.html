@@ -17,7 +17,7 @@
         每时段容量：{{ service.daily_capacity }} 人
     </p>
     <p>{{ service.description }}</p>
-    <p>综合评分：{{ service.average_rating if service.average_rating else '暂无评价' }}</p>
+    <p>综合评分：{{ average_rating if average_rating is not none else '暂无评价' }}</p>
     {% if current_user.is_authenticated and current_user.role == 'admin' %}
         <span class="badge badge-cancelled">管理员账号用于后台管理，不可提交预约；如需预约请使用普通用户账号</span>
     {% else %}
@@ -27,7 +27,7 @@
 
 <section class="panel">
     <h3>今日各时段剩余名额</h3>
-    <p style="color:#666;font-size:0.9em;">当天已开始的时段不可预约，请改选尚未开始的时段或改约其它日期。</p>
+    <p class="hint-text">当天已开始的时段不可预约，请改选尚未开始的时段或改约其它日期。</p>
     <table class="grid">
         <tr><th>时段</th><th>容量</th><th>剩余</th><th>状态</th></tr>
         {% for item in availability %}

@@ -40,7 +40,7 @@
                 {% if appt.status in ['pending', 'confirmed'] %}
                     <form method="post" action="{{ url_for('admin.update_appointment_status', appointment_id=appt.id) }}">
                         {{ csrf_input() }}
-                        <select name="status" class="form-control" style="width:auto;display:inline-block">
+                        <select name="status" class="form-control select-inline">
                             {% for s in allowed_transitions(appt.status) %}
                                 <option value="{{ s }}">{{ status_text(s) }}</option>
                             {% endfor %}

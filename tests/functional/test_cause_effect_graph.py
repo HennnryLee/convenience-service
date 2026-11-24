@@ -31,7 +31,6 @@ C8 该时段剩余名额 > 0
 from datetime import date, timedelta
 
 import pytest
-
 from app.extensions import db
 from app.models import Appointment, ServiceItem, User
 from app.services.appointment_service import create_appointment

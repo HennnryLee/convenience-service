@@ -1,0 +1,8 @@
+# 提交前质量门禁：只做快速静态检查，完整测试由 CI 执行。
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        files: ^(app|tests|scripts)/.*\.py$|^(run|seed)\.py$

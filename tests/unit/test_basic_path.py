@@ -20,8 +20,6 @@
 """
 from datetime import date, timedelta
 
-import pytest
-
 from app.extensions import db
 from app.models import Appointment, User
 from app.services.appointment_service import cancel_appointment
@@ -57,7 +55,7 @@ def test_basic_path_set_is_independent():
 
     used = set()
     for name, path in paths.items():
-        path_edges = set(zip(path, path[1:]))
+        path_edges = set(zip(path, path[1:], strict=False))
         new_edges = path_edges - used
         assert new_edges, f"{name} 没有引入新边，不是独立路径"
         used |= path_edges

@@ -5,7 +5,6 @@
 每个等价类取一个代表值，验证"是否写入数据库"与"页面提示"两项结果。
 """
 import pytest
-
 from app.models import User
 
 

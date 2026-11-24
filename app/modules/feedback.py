@@ -3,11 +3,11 @@ from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
 from app.config import Config
-
 from app.forms import FeedbackForm
 from app.repositories import AppointmentRepository, FeedbackRepository
 from app.services.feedback_service import create_feedback, list_reviewable_appointments
 from app.utils.decorators import consumer_only
+from app.utils.pagination import parse_page
 
 feedback_bp = Blueprint("feedback", __name__)
 
@@ -42,7 +42,7 @@ def create():
 @login_required
 @consumer_only
 def my_feedback():
-    page = request.args.get("page", 1, type=int)
+    page = parse_page(request.args.get("page"))
     pagination = FeedbackRepository.list_by_user(
         current_user.id, page=page, per_page=Config.USER_ITEMS_PER_PAGE
     )

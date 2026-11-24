@@ -17,11 +17,12 @@
 from __future__ import annotations
 
 import os
+
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle, Ellipse, Polygon, FancyArrowPatch, Circle
+from matplotlib.patches import Circle, Ellipse, FancyArrowPatch, Polygon, Rectangle
 
 # ---------------------------------------------------------------- 全局样式
 plt.rcParams["font.sans-serif"] = ["Microsoft YaHei", "SimHei", "Noto Sans SC"]
@@ -544,7 +545,7 @@ def draw_page_structure():
         (0.6, 4.5, "announcements/list · detail"),
         (0.6, 3.55, "feedback/create · mine"),
         (0.6, 2.6, "admin/dashboard · services · users · appointments · feedbacks"),
-        (0.6, 1.65, "errors/403 · 404 · 500"),
+        (0.6, 1.65, "errors/error.html（400 · 403 · 404 · 405 · 413 · 500）"),
     ]
     for x, y, name in children:
         box(ax, x + 0.5, y, 7.9, 0.62, name, fc=C["white"], ec=C["blue_e"], fs=8.5, align="left")

@@ -10,10 +10,8 @@
 from datetime import date, timedelta
 
 import pytest
-
 from app.extensions import db
 from app.models import Appointment, ServiceItem, User
-
 
 TARGET_DAY = (date.today() + timedelta(days=1)).strftime("%Y-%m-%d")
 

@@ -6,23 +6,35 @@
     python run.py --seed                           # 灌演示数据（幂等，同名记录自动跳过）
     python run.py --init-db --seed                 # 首次部署：建表 + 灌演示数据
     python run.py --init-db --seed --serve         # 初始化后继续启动服务器
-    python run.py --init-db --seed --force-reset   # ⚠️ 危险：清空并重建（数据不可恢复）
+    python run.py --init-db --seed --force-reset   # 危险：清空并重建（数据不可恢复）
 
 安全约定（2026-11-23 修订）：
     早期版本在 --init-db / --seed 时无条件执行 db.drop_all()，用户按"如何运行"
     执行一遍就会把真实数据全部清空。现改为：默认只建表 / 补数据，绝不删；
     只有显式传入 --force-reset 才允许 drop_all()，并会先打印将要删除的数据量。
+
+与 Flask CLI 的关系（2026-11-24）：
+    常规运维命令也可用 `flask --app "app:create_app()" init-db / seed-demo`；
+    本文件保留原有命令行参数，是为了不破坏课程文档与历史使用习惯。
 """
+from __future__ import annotations
+
 import argparse
+import os
 import sys
 
 from app import create_app
 from app.extensions import db
+from sqlalchemy import func, select
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="便民服务平台启动脚本")
-    parser.add_argument("--config", default="development", help="配置名称：development/testing/production")
+    parser.add_argument(
+        "--config",
+        default=os.environ.get("FLASK_CONFIG", "development"),
+        help="配置名称：development/testing/production",
+    )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=5000)
     parser.add_argument("--init-db", action="store_true", help="建表（幂等，不删除已有数据）")
@@ -33,22 +45,21 @@ def build_parser():
     return parser
 
 
-def _existing_counts():
+def _existing_counts() -> dict[str, int]:
     """统计库中现有业务数据，用于 --force-reset 前给出代价提示。"""
     from app.models import Announcement, Appointment, Feedback, ServiceItem, User
 
     return {
-        "users": db.session.query(User).count(),
-        "services": db.session.query(ServiceItem).count(),
-        "appointments": db.session.query(Appointment).count(),
-        "announcements": db.session.query(Announcement).count(),
-        "feedbacks": db.session.query(Feedback).count(),
+        "users": db.session.scalar(select(func.count()).select_from(User)),
+        "services": db.session.scalar(select(func.count()).select_from(ServiceItem)),
+        "appointments": db.session.scalar(select(func.count()).select_from(Appointment)),
+        "announcements": db.session.scalar(select(func.count()).select_from(Announcement)),
+        "feedbacks": db.session.scalar(select(func.count()).select_from(Feedback)),
     }
 
 
-def main(argv=None):
-    parser = build_parser()
-    args = parser.parse_args(argv)
+def main(argv=None) -> int:
+    args = build_parser().parse_args(argv)
     app = create_app(args.config)
 
     if args.init_db or args.seed or args.force_reset:
@@ -71,10 +82,11 @@ def main(argv=None):
                     print("[OK] 数据库表结构就绪（未删除已有数据）")
 
             if args.seed:
-                from seed import seed_demo_data
+                from app.seed_data import seed_demo_data
 
-                seed_demo_data()
-                print("[OK] 演示数据已写入（同名记录自动跳过，未删除已有数据）")
+                created = seed_demo_data()
+                summary = "、".join(f"{name} +{count}" for name, count in created.items())
+                print(f"[OK] 演示数据已写入（本次新增：{summary}；同名记录自动跳过，未删除已有数据）")
         # 仅做初始化/灌数据时不再启动服务器，方便脚本化执行
         if not args.serve:
             return 0
@@ -84,4 +96,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    sys.exit(main(sys.argv[1:]))

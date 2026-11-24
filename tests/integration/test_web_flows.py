@@ -142,7 +142,7 @@ def test_cancel_appointment_flow(client, normal_user, service, appointment):
     resp = client.post(f"/appointments/{appointment.id}/cancel", follow_redirects=True)
     assert resp.status_code == 200
     assert "预约已取消".encode() in resp.data
-    assert Appointment.query.get(appointment.id).status == "cancelled"
+    assert db.session.get(Appointment, appointment.id).status == "cancelled"
 
 
 # ------------------------------------------------------------------ 服务与公告页面
@@ -188,7 +188,7 @@ def test_admin_toggle_service_status(client, admin_user, service):
     client.post("/auth/login", data={"login": "admin", "password": "Admin@123"})
     resp = client.post(f"/admin/services/{service.id}/toggle", follow_redirects=True)
     assert resp.status_code == 200
-    assert ServiceItem.query.get(service.id).status == "offline"
+    assert db.session.get(ServiceItem, service.id).status == "offline"
     # 下架后前台查询不到
     assert service.name.encode() not in client.get("/services/").data
 
@@ -199,7 +199,7 @@ def test_admin_change_appointment_status(client, admin_user, service, appointmen
         f"/admin/appointments/{appointment.id}/status",
         data={"status": "confirmed"}, follow_redirects=True)
     assert resp.status_code == 200
-    assert Appointment.query.get(appointment.id).status == "confirmed"
+    assert db.session.get(Appointment, appointment.id).status == "confirmed"
 
 
 def test_admin_can_publish_announcement(client, admin_user):

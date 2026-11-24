@@ -25,7 +25,21 @@ class ServiceRepository(BaseRepository):
 
     @staticmethod
     def get_by_name(name):
-        return db.session.scalar(select(ServiceItem).where(ServiceItem.name == name))
+        if not name:
+            return None
+        return db.session.scalar(select(ServiceItem).where(ServiceItem.name == name.strip()))
+
+    @staticmethod
+    def name_conflict(name, exclude_id=None):
+        """重名校验（编辑时排除自身）。
+
+        原先只在新建时检查重名，编辑服务名称撞库会触发数据库唯一约束，
+        最终表现为 500 —— 用户看到的是"服务器内部错误"而不是"名称已存在"。
+        """
+        service = ServiceRepository.get_by_name(name)
+        if service is None:
+            return False
+        return exclude_id is None or service.id != exclude_id
 
     @classmethod
     def create(cls, **fields):
@@ -68,3 +82,15 @@ class ServiceRepository(BaseRepository):
         return db.session.scalar(
             select(func.count()).select_from(ServiceItem).where(ServiceItem.status == status)
         )
+
+    @staticmethod
+    def counts_by_category(only_online=True):
+        """分类 -> 在线服务数，一次聚合查询完成。
+
+        原实现分类导航会按每个分类各跑一次分页查询（5 个分类 = 5 次 COUNT），
+        首页/列表页多出 4 次无谓往返；改为 GROUP BY 后只查一次。
+        """
+        stmt = select(ServiceItem.category, func.count()).group_by(ServiceItem.category)
+        if only_online:
+            stmt = stmt.where(ServiceItem.status == "online")
+        return {category: count for category, count in db.session.execute(stmt).all()}

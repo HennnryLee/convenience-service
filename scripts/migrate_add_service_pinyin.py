@@ -19,12 +19,11 @@ import sys
 BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 sys.path.insert(0, BASE)
 
-from sqlalchemy import inspect, select, text  # noqa: E402
-
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
 from app.models.service import ServiceItem  # noqa: E402
 from app.utils.pinyin import to_pinyin_key  # noqa: E402
+from sqlalchemy import inspect, select, text  # noqa: E402
 
 COLUMN = "name_pinyin"
 INDEX = "ix_services_name_pinyin"

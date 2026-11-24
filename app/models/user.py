@@ -5,6 +5,7 @@
 from datetime import datetime
 
 from flask_login import UserMixin
+from sqlalchemy.orm import validates
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app.extensions import db
@@ -44,6 +45,21 @@ class User(UserMixin, db.Model):
         "Feedback", back_populates="user", cascade="all, delete-orphan", lazy="dynamic"
     )
     announcements = db.relationship("Announcement", back_populates="author", lazy="dynamic")
+
+    # ------------------------------------------------------------------ 数据规范化
+    @validates("username")
+    def _strip_username(self, key, value):
+        """用户名写入时去首尾空白，避免 'admin ' 与 'admin' 被当成两个账号。"""
+        return value.strip() if isinstance(value, str) else value
+
+    @validates("email")
+    def _normalize_email(self, key, value):
+        """邮箱统一小写：Foo@Example.com 与 foo@example.com 是同一个邮箱。
+
+        邮箱在协议上不区分大小写，但 SQLite/MySQL 的默认比较区分大小写；
+        若不在写入层规范化，用户可以用大小写变体重复注册，登录时也会"明明输对却进不去"。
+        """
+        return value.strip().lower() if isinstance(value, str) else value
 
     # ------------------------------------------------------------------ 行为
     def set_password(self, raw_password):

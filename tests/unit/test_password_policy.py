@@ -4,7 +4,6 @@
 覆盖：长度边界（7/8/20/21 位）、字符类型、空格、与用户名相同。
 """
 import pytest
-
 from app.services.password_policy import validate_password
 
 

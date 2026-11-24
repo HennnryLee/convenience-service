@@ -4,7 +4,6 @@
     把知识放进表里，代码只剩一次查表，测试只需验证"表 + 查表函数"这一处。
 """
 import pytest
-
 from app.utils.table_driven import (
     CATEGORY_BADGES,
     category_badge,

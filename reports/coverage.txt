@@ -1,60 +1,20 @@
-........................................................................ [ 18%]
-........................................................................ [ 37%]
-........................................................................ [ 56%]
-........................................................................ [ 75%]
-........................................................................ [ 94%]
-......................                                                   [100%]
+﻿........................................................................ [ 13%]
+........................................................................ [ 27%]
+........................................................................ [ 40%]
+........................................................................ [ 54%]
+........................................................................ [ 68%]
+........................................................................ [ 81%]
+........................................................................ [ 95%]
+........................                                                 [100%]
 =============================== tests coverage ================================
 ______________ coverage: platform win32, python 3.12.10-final-0 _______________
 
-Name                                          Stmts   Miss Branch BrPart  Cover   Missing
------------------------------------------------------------------------------------------
-app\__init__.py                                  48      3      0      0    94%   63, 88, 92
-app\config.py                                    29      0      0      0   100%
-app\extensions.py                                 9      0      0      0   100%
-app\forms\__init__.py                             6      0      0      0   100%
-app\forms\admin_forms.py                         25      0      0      0   100%
-app\forms\appointment_forms.py                   14      0      0      0   100%
-app\forms\auth_forms.py                          41      6     10      0    80%   77-78, 81-84
-app\forms\feedback_forms.py                       9      0      0      0   100%
-app\forms\service_forms.py                       12      0      0      0   100%
-app\models\__init__.py                            6      0      0      0   100%
-app\models\announcement.py                       19      1      0      0    95%   28
-app\models\appointment.py                        31      2      0      0    94%   50, 67
-app\models\feedback.py                           21      1      0      0    95%   41
-app\models\service.py                            35      1      2      0    97%   75
-app\models\user.py                               33      2      2      1    91%   56, 68
-app\modules\__init__.py                           0      0      0      0   100%
-app\modules\admin.py                            106     12     22      8    84%   73-74, 80-81, 84-85, 89, 96-97, 118, 145, 176
-app\modules\announcements.py                     24      5      6      3    73%   18-19, 23, 31-32
-app\modules\appointments.py                      45      0     10      0   100%
-app\modules\auth.py                              56     11     18      3    78%   20, 38, 47-48, 73-84
-app\modules\feedback.py                          34      2      6      1    92%   33-34
-app\modules\main.py                              14      2      0      0    86%   15, 30
-app\modules\services.py                          27      2      6      1    91%   41-42
-app\repositories\__init__.py                      6      0      0      0   100%
-app\repositories\announcement_repository.py      23      0      4      1    96%   21->23
-app\repositories\appointment_repository.py       52      2      6      0    97%   91-96
-app\repositories\base.py                         33      1      8      3    90%   23->25, 41, 48->50
-app\repositories\feedback_repository.py          27      0      0      0   100%
-app\repositories\service_repository.py           41      1     10      2    94%   54, 62->64
-app\repositories\user_repository.py              48      1      8      1    96%   69
-app\services\__init__.py                          0      0      0      0   100%
-app\services\appointment_rules.py                88      0     24      0   100%
-app\services\appointment_service.py              74      2     38      3    96%   71, 122, 156->151
-app\services\auth_service.py                     41      2     24      2    94%   19, 24
-app\services\feedback_service.py                 24      1     14      1    95%   34
-app\services\password_policy.py                  18      0     10      0   100%
-app\services\service_catalog.py                  31      4     10      4    80%   21, 23, 25, 46
-app\utils\__init__.py                             0      0      0      0   100%
-app\utils\constants.py                           14      0      0      0   100%
-app\utils\contracts.py                           33      1     12      3    91%   72->74, 75->77, 78
-app\utils\decorators.py                          18      0      4      0   100%
-app\utils\pinyin.py                              13      0      6      0   100%
-app\utils\table_driven.py                        24      0      8      0   100%
-app\utils\validators.py                          17      2      4      2    81%   29, 32
------------------------------------------------------------------------------------------
-TOTAL                                          1269     67    272     39    93%
+Name    Stmts   Miss Branch BrPart   Cover   Missing
+----------------------------------------------------
+TOTAL    1642      0    324      0  100.0%
+
+55 files skipped due to complete coverage.
 Coverage HTML written to dir reports/coverage_html
 Coverage XML written to file reports/coverage.xml
-382 passed in 64.71s (0:01:04)
+Required test coverage of 98.0% reached. Total coverage: 100.00%
+528 passed in 60.50s (0:01:00)

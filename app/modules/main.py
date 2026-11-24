@@ -1,10 +1,11 @@
 """首页与站点公共信息模块（蓝图 main）。
 
 职责：站点首页、关于页；不依赖具体业务，仅做门户与导航。
+数据编排已下沉到 ``home_service``，视图只负责渲染。
 """
 from flask import Blueprint, redirect, render_template, url_for
 
-from app.repositories import AnnouncementRepository, ServiceRepository
+from app.services.home_service import get_home_data
 
 main_bp = Blueprint("main", __name__)
 
@@ -18,11 +19,7 @@ def favicon():
 @main_bp.route("/")
 def index():
     """站点首页：展示热门服务入口与最新公告。"""
-    hot_services = ServiceRepository.list_online(limit=3)
-    announcements = AnnouncementRepository.latest(limit=5)
-    return render_template(
-        "main/index.html", hot_services=hot_services, announcements=announcements
-    )
+    return render_template("main/index.html", **get_home_data())
 
 
 @main_bp.route("/about")

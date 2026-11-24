@@ -5,29 +5,61 @@
   2. 便于测试：单元测试可为每个用例创建一个全新的、隔离的应用实例；
   3. 延迟绑定：扩展对象在 extensions.py 中定义，在此处才与 app 绑定。
 
-蓝图注册随实验增量推进：实验一只注册 main；实验四接入全部业务模块。
+初始化顺序（2026-11-24 工程化改进）：
+    配置校验 → 扩展绑定 → 蓝图注册 → 登录/模板 → 日志与安全 → 错误页 → CLI
+其中日志必须先于错误处理注册，5xx 日志才带得上 request_id；安全头独立成模块，
+便于系统测试单独验证，不与业务代码耦合。
 """
+from __future__ import annotations
+
+import os
+
 from flask import Flask
 
 from .extensions import csrf, db, login_manager
 
 
-def create_app(config_name="development"):
-    """创建并初始化 Flask 应用。"""
-    from .config import INSTANCE_DIR, config_by_name
+def create_app(config_name=None):
+    """创建并初始化 Flask 应用。
+
+    参数：
+        config_name: development / testing / production，默认读环境变量 FLASK_CONFIG。
+    """
+    from .config import DEFAULT_SECRET_KEY, INSTANCE_DIR, config_by_name
+
+    config_name = config_name or os.environ.get("FLASK_CONFIG", "development")
+    config_class = config_by_name.get(config_name, config_by_name["default"])
+
+    # 生产环境 fail fast：默认密钥意味着会话可被伪造，不能带病上线
+    if config_name == "production" and config_class.SECRET_KEY == DEFAULT_SECRET_KEY:
+        raise RuntimeError(
+            "生产环境必须通过环境变量 SECRET_KEY 设置随机密钥，"
+            "不能使用默认开发密钥启动。"
+        )
 
     app = Flask(__name__, instance_path=INSTANCE_DIR, instance_relative_config=True)
-    app.config.from_object(config_by_name.get(config_name, config_by_name["default"]))
+    app.config.from_object(config_class)
+    app.json.ensure_ascii = False
 
-    # 1) 绑定扩展
+    _init_extensions(app)
+    _register_blueprints(app)
+    _register_login(app)
+    _register_template_globals(app)
+    _init_observability(app)
+    return app
+
+
+def _init_extensions(app):
+    """绑定扩展并导入模型，保证 db.create_all 能发现全部数据表。"""
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    # 2) 注册模型（保证 db.create_all 能发现全部数据表）
     from . import models  # noqa: F401
 
-    # 3) 注册蓝图（按业务模块划分，体现模块化构造）
+
+def _register_blueprints(app):
+    """按业务模块注册蓝图，体现模块化构造。"""
     from .modules.admin import admin_bp
     from .modules.announcements import announcements_bp
     from .modules.appointments import appointments_bp
@@ -44,23 +76,38 @@ def create_app(config_name="development"):
     app.register_blueprint(feedback_bp, url_prefix="/feedback")
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
-    # 4) 用户加载回调与模板全局变量
-    _register_login(app)
-    _register_template_globals(app)
 
-    # 5) 错误页
-    _register_error_handlers(app)
+def _init_observability(app):
+    """日志、安全响应头、统一错误页与运维命令。"""
+    from .cli import register_cli
+    from .errors import register_error_handlers
+    from .logging import configure_logging
+    from .security import init_security
 
-    return app
+    configure_logging(app)
+    init_security(app)
+    register_error_handlers(app)
+    register_cli(app)
 
 
 def _register_login(app):
-    """Flask-Login 用户加载回调（会话管理的必要配置）。"""
+    """Flask-Login 用户加载回调（会话管理的必要配置）。
+
+    安全细节：被管理员禁用的账号即使浏览器还持有旧会话，也必须在下次请求时
+    失效（返回 None 等价于匿名），否则「禁用」只对新登录生效。
+    """
     from .models.user import User
 
     @login_manager.user_loader
     def load_user(user_id):
-        return db.session.get(User, int(user_id))
+        try:
+            user_id_int = int(user_id)
+        except (TypeError, ValueError):
+            return None
+        user = db.session.get(User, user_id_int)
+        if user is None or not user.is_active:
+            return None
+        return user
 
 
 def _register_template_globals(app):
@@ -73,20 +120,3 @@ def _register_template_globals(app):
         category_text=category_text,
         allowed_transitions=next_statuses,
     )
-
-
-def _register_error_handlers(app):
-    """统一错误提示，提升交互的可反馈性。"""
-    from flask import render_template
-
-    @app.errorhandler(403)
-    def forbidden(error):
-        return render_template("errors/403.html"), 403
-
-    @app.errorhandler(404)
-    def not_found(error):
-        return render_template("errors/404.html"), 404
-
-    @app.errorhandler(500)
-    def server_error(error):
-        return render_template("errors/500.html"), 500

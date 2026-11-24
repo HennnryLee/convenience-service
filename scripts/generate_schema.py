@@ -8,10 +8,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir)))
 
-from sqlalchemy.schema import CreateTable  # noqa: E402
-
 from app import create_app  # noqa: E402
 from app.extensions import db  # noqa: E402
+from sqlalchemy.schema import CreateTable  # noqa: E402
 
 OUTPUT = os.path.join(os.path.dirname(__file__), os.pardir, "docs", "schema.sql")
 

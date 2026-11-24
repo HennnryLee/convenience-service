@@ -10,7 +10,6 @@
 from datetime import date, timedelta
 
 import pytest
-
 from app.services.appointment_rules import (
     AppointmentContext,
     can_cancel,

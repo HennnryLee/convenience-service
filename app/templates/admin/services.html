@@ -17,7 +17,7 @@
             <td><span class="badge badge-{{ service.status }}">{{ '上架' if service.is_online else '下架' }}</span></td>
             <td>
                 <a class="btn btn-sm" href="{{ url_for('admin.edit_service', service_id=service.id) }}">编辑</a>
-                <form method="post" action="{{ url_for('admin.toggle_service', service_id=service.id) }}" style="display:inline">
+                <form method="post" action="{{ url_for('admin.toggle_service', service_id=service.id) }}" class="inline-form">
                     {{ csrf_input() }}
                     <button class="btn btn-sm btn-outline" type="submit">{{ '下架' if service.is_online else '上架' }}</button>
                 </form>

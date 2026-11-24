@@ -24,6 +24,13 @@ body {
 
 .container { width: min(1140px, 92%); margin: 0 auto; }
 
+/* 键盘用户跳过导航直达主内容（无障碍） */
+.skip-link {
+    position: absolute; left: -9999px; top: 0; z-index: 100;
+    background: #fff; color: var(--primary); padding: 8px 14px; border-radius: 6px;
+}
+.skip-link:focus { left: 12px; top: 12px; }
+
 /* ---------- 头部 ---------- */
 .site-header { background: #fff; border-bottom: 1px solid var(--border); }
 .header-inner { display: flex; align-items: center; gap: 18px; padding: 14px 0; flex-wrap: wrap; }
@@ -63,6 +70,7 @@ body {
 .alert-danger, .alert-error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
 .alert-warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
 .alert-info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+.alert.is-fading { opacity: 0; transition: opacity .6s ease; }
 
 /* ---------- 布局 ---------- */
 .hero { background: linear-gradient(120deg, #2563eb, #3b82f6); color: #fff;
@@ -78,7 +86,16 @@ body {
 .card h3 { margin-top: 0; }
 .card a { color: var(--primary); text-decoration: none; }
 .panel { margin: 20px 0; }
+.card-spaced { margin-bottom: 12px; }
 .text-center { text-align: center; }
+.pre-wrap { white-space: pre-wrap; }
+.hint-text { color: #666; font-size: 0.9em; }
+.inline-form { display: inline; }
+.select-inline { width: auto; display: inline-block; }
+
+/* 错误页 */
+.error-panel { padding: 36px 20px; }
+.error-code { margin: 0; font-size: 52px; font-weight: 700; color: var(--primary); line-height: 1.1; }
 
 /* ---------- 表单 ---------- */
 .form-group { margin-bottom: 14px; }
@@ -88,6 +105,7 @@ body {
 .form-control:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px #dbeafe; }
 .field-errors { color: var(--danger); font-size: 13px; margin-top: 4px; }
 .form-actions { margin-top: 18px; display: flex; gap: 10px; }
+.form-actions-center { justify-content: center; }
 .auth-box { max-width: 460px; margin: 30px auto; }
 
 /* ---------- 表格 ---------- */

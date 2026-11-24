@@ -131,9 +131,9 @@ def main():
     out = os.path.join(out_dir, "instrumentation_report.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("# 程序插装报告（教材 11.4）\n\n")
-        f.write(f"- 被插装模块：`app/services/appointment_rules.py`\n")
-        f.write(f"- 插装方式：`sys.settrace` 逐行回调（等价于在每行前插入计数器语句）\n")
-        f.write(f"- 场景数：9（覆盖 7 个判定的真/假分支）\n")
+        f.write("- 被插装模块：`app/services/appointment_rules.py`\n")
+        f.write("- 插装方式：`sys.settrace` 逐行回调（等价于在每行前插入计数器语句）\n")
+        f.write("- 场景数：9（覆盖 7 个判定的真/假分支）\n")
         f.write(f"- 可执行语句数：{len(exec_lines)}，被执行：{len(hit)}，未执行：{len(dead)}\n")
         f.write(f"- 语句插装覆盖率：{len(hit) / len(exec_lines) * 100:.1f}%\n\n")
         f.write("## 逐行执行次数（探测器读数）\n\n")

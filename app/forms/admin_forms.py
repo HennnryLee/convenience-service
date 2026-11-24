@@ -15,16 +15,30 @@ from app.utils.constants import APPOINTMENT_STATUS_TEXT, SERVICE_CATEGORIES
 
 
 class ServiceForm(FlaskForm):
-    name = StringField("服务名称", validators=[DataRequired(message="请填写服务名称。"), Length(max=100)])
+    name = StringField(
+        "服务名称",
+        validators=[DataRequired(message="请填写服务名称。"), Length(max=100)],
+        render_kw={"autocomplete": "off"},
+    )
     category = SelectField(
         "服务分类", choices=list(SERVICE_CATEGORIES.items()), validators=[DataRequired()]
     )
     description = TextAreaField("服务简介", validators=[Optional(), Length(max=500)])
     address = StringField("办理地点", validators=[Optional(), Length(max=200)])
-    price = DecimalField("服务费用（元）", default=0, validators=[NumberRange(min=0, message="费用不能为负数。")])
-    duration_minutes = IntegerField("预计耗时（分钟）", default=30, validators=[NumberRange(min=1)])
+    price = DecimalField(
+        "服务费用（元）", default=0,
+        validators=[NumberRange(min=0, message="费用不能为负数。")],
+        render_kw={"inputmode": "decimal"},
+    )
+    duration_minutes = IntegerField(
+        "预计耗时（分钟）", default=30,
+        validators=[NumberRange(min=1)],
+        render_kw={"inputmode": "numeric"},
+    )
     daily_capacity = IntegerField(
-        "每时段可预约人数", default=5, validators=[NumberRange(min=1, message="容量至少为 1。")]
+        "每时段可预约人数", default=5,
+        validators=[NumberRange(min=1, message="容量至少为 1。")],
+        render_kw={"inputmode": "numeric"},
     )
     status = SelectField("上架状态", choices=[("online", "上架"), ("offline", "下架")])
     submit = SubmitField("保存")

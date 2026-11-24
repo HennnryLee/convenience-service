@@ -18,6 +18,7 @@ class AppointmentForm(FlaskForm):
     contact_name = StringField(
         "联系人姓名",
         validators=[DataRequired(message="请填写联系人姓名。"), Length(min=2, max=30)],
+        render_kw={"autocomplete": "name"},
     )
     contact_phone = StringField(
         "联系电话",
@@ -26,6 +27,7 @@ class AppointmentForm(FlaskForm):
             Length(min=11, max=11, message="联系电话需为 11 位。"),
             Regexp(r"^1[3-9]\d{9}$", message="手机号格式不正确。"),
         ],
+        render_kw={"autocomplete": "tel", "inputmode": "numeric"},
     )
     remark = TextAreaField("备注", validators=[Optional(), Length(max=200)])
     submit = SubmitField("提交预约")

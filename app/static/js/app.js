@@ -28,8 +28,8 @@
         var alerts = document.querySelectorAll(".alert");
         window.setTimeout(function () {
             alerts.forEach(function (el) {
-                el.style.transition = "opacity .6s";
-                el.style.opacity = "0";
+                // 通过 class 触发 CSS 过渡，避免内联样式被 CSP 拦截
+                el.classList.add("is-fading");
                 window.setTimeout(function () {
                     if (el.parentNode) { el.parentNode.removeChild(el); }
                 }, 600);

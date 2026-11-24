@@ -10,10 +10,15 @@
 from dataclasses import dataclass
 from datetime import date, datetime
 
-from app.utils.constants import APPOINTMENT_TRANSITIONS, TIME_SLOTS
+from app.utils.constants import (
+    APPOINTMENT_MAX_DAYS_AHEAD,
+    APPOINTMENT_TRANSITIONS,
+    TIME_SLOTS,
+)
 from app.utils.contracts import ensure, invariant, require
+from app.utils.time_slots import is_known_slot, now_minutes, parse_slot
 
-MAX_DAYS_AHEAD = 30  # 最多可预约未来 30 天
+MAX_DAYS_AHEAD = APPOINTMENT_MAX_DAYS_AHEAD  # 兼容旧调用点/文档中的名字
 
 
 @dataclass(frozen=True)
@@ -36,7 +41,7 @@ class AppointmentContext:
 def is_valid_slot(slot):
     """前置条件：slot 为字符串或 None；后置条件：返回 slot 是否在开放时段表中。"""
     require(slot is None or isinstance(slot, str), "slot 必须是字符串或 None")
-    result = isinstance(slot, str) and slot in TIME_SLOTS
+    result = is_known_slot(slot)
     ensure(isinstance(result, bool), "is_valid_slot 必须返回布尔值")
     return result
 
@@ -92,11 +97,11 @@ def is_slot_started(appointment_date, slot, now):
     require(isinstance(now, datetime), "now 必须是 datetime")
     slots_snapshot = tuple(TIME_SLOTS)
 
-    if appointment_date != now.date() or slot not in TIME_SLOTS:
+    bounds = parse_slot(slot)
+    if appointment_date != now.date() or slot not in TIME_SLOTS or bounds is None:
         result = False  # 非今日 / 无效时段由其它规则负责，这里不越权判定
     else:
-        start_h, start_m = (int(part) for part in slot.split("-")[0].split(":"))
-        result = (now.hour, now.minute) >= (start_h, start_m)
+        result = now_minutes(now) >= bounds[0]
 
     ensure(isinstance(result, bool), "is_slot_started 必须返回布尔值")
     invariant(tuple(TIME_SLOTS) == slots_snapshot, "时段表在判定过程中不得被修改")
@@ -121,17 +126,15 @@ def is_slot_ended(appointment_date, slot, now):
     require(isinstance(now, datetime), "now 必须是 datetime")
     slots_snapshot = tuple(TIME_SLOTS)
 
-    if slot not in TIME_SLOTS:
+    bounds = parse_slot(slot)
+    if slot not in TIME_SLOTS or bounds is None:
         result = False  # 非法时段由预约校验报错，这里不越权判定
     elif appointment_date < now.date():
         result = True
     elif appointment_date > now.date():
         result = False
     else:
-        # 用 map 解包而非生成器表达式：保持规则模块中单层循环的数量稳定，
-        # 也让教材「循环测试」的启发式检查（无嵌套循环）不被误触发。
-        end_h, end_m = map(int, slot.split("-")[1].split(":"))
-        result = (now.hour, now.minute) >= (end_h, end_m)
+        result = now_minutes(now) >= bounds[1]
 
     ensure(isinstance(result, bool), "is_slot_ended 必须返回布尔值")
     invariant(tuple(TIME_SLOTS) == slots_snapshot, "时段表在判定过程中不得被修改")

@@ -2,7 +2,6 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 
-from app.extensions import db
 from app.forms import LoginForm, ProfileForm, RegistrationForm
 from app.services import auth_service
 
@@ -44,6 +43,7 @@ def login():
             flash("用户名或密码错误。", "danger")
             return render_template("auth/login.html", form=form)
         if not user.is_active:
+            # 只有密码正确时才提示"已禁用"，不会向攻击者泄露账号是否存在
             flash("账号已被禁用，请联系管理员。", "warning")
             return render_template("auth/login.html", form=form)
         login_user(user, remember=form.remember.data)
@@ -78,7 +78,6 @@ def profile():
             phone=(form.phone.data or "").strip() or None,
             real_name=(form.real_name.data or "").strip() or None,
         )
-        db.session.commit()
         flash("个人信息已更新。", "success")
         return redirect(url_for("auth.profile"))
     return render_template("auth/profile.html", form=form)

@@ -22,7 +22,6 @@ import re
 from datetime import date, timedelta
 
 import pytest
-
 from app import create_app
 from app.config import DevelopmentConfig
 from app.extensions import db
@@ -141,7 +140,7 @@ def test_admin_can_update_appointment_status(csrf_app):
     )
     assert resp.status_code == 302, resp.get_data(as_text=True)[:200]
     with csrf_app.app_context():
-        assert Appointment.query.get(1).status == "confirmed"
+        assert db.session.get(Appointment, 1).status == "confirmed"
 
 
 def test_admin_can_toggle_service(csrf_app):
@@ -153,7 +152,7 @@ def test_admin_can_toggle_service(csrf_app):
     resp = client.post("/admin/services/1/toggle", data={"csrf_token": token})
     assert resp.status_code == 302
     with csrf_app.app_context():
-        assert ServiceItem.query.get(1).status == "offline"
+        assert db.session.get(ServiceItem, 1).status == "offline"
 
 
 def test_admin_can_toggle_user(csrf_app):
@@ -165,7 +164,7 @@ def test_admin_can_toggle_user(csrf_app):
     resp = client.post("/admin/users/2/toggle", data={"csrf_token": token})
     assert resp.status_code == 302
     with csrf_app.app_context():
-        assert User.query.get(2).is_active is False
+        assert db.session.get(User, 2).is_active is False
 
 
 def test_user_can_cancel_appointment(csrf_app):
@@ -177,4 +176,4 @@ def test_user_can_cancel_appointment(csrf_app):
     resp = client.post("/appointments/1/cancel", data={"csrf_token": token})
     assert resp.status_code == 302
     with csrf_app.app_context():
-        assert Appointment.query.get(1).status == "cancelled"
+        assert db.session.get(Appointment, 1).status == "cancelled"

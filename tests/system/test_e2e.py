@@ -56,11 +56,11 @@ def test_full_business_journey(client, admin_user, service):
 
     client.post(f"/admin/appointments/{appointment.id}/status",
                 data={"status": "confirmed"}, follow_redirects=True)
-    assert Appointment.query.get(appointment.id).status == "confirmed"
+    assert db.session.get(Appointment, appointment.id).status == "confirmed"
 
     client.post(f"/admin/appointments/{appointment.id}/status",
                 data={"status": "completed"}, follow_redirects=True)
-    assert Appointment.query.get(appointment.id).status == "completed"
+    assert db.session.get(Appointment, appointment.id).status == "completed"
 
     # 6) 用户评价
     client.get("/auth/logout")
@@ -90,7 +90,7 @@ def test_offline_service_cannot_be_booked(client, admin_user, service):
     client.post("/auth/login", data={"login": "admin", "password": "Admin@123"},
                 follow_redirects=True)
     client.post(f"/admin/services/{service.id}/toggle", follow_redirects=True)
-    assert ServiceItem.query.get(service.id).status == "offline"
+    assert db.session.get(ServiceItem, service.id).status == "offline"
 
     client.get("/auth/logout")
     _register_and_login(client, "e2e2", "e2e2@example.com")

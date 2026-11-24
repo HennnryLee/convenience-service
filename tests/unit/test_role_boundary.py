@@ -14,7 +14,6 @@
 from datetime import date, datetime, time, timedelta
 
 import pytest
-
 from app.extensions import db
 from app.models import Appointment, Feedback
 from app.services.appointment_rules import is_slot_ended
@@ -99,41 +98,41 @@ def test_all_today_slots_ended_at_2043():
 def test_auto_complete_marks_ended_confirmed(app, normal_user, service):
     appt = _make_appointment(normal_user, service, DAY, "09:00-10:00")
     assert auto_complete_due(now=LATE) == 1
-    assert Appointment.query.get(appt.id).status == "completed"
+    assert db.session.get(Appointment, appt.id).status == "completed"
 
 
 def test_auto_complete_skips_not_yet_ended(app, normal_user, service):
     appt = _make_appointment(normal_user, service, DAY, "09:00-10:00")
     assert auto_complete_due(now=BEFORE_END) == 0
-    assert Appointment.query.get(appt.id).status == "confirmed"
+    assert db.session.get(Appointment, appt.id).status == "confirmed"
 
 
 def test_auto_complete_skips_pending(app, normal_user, service):
     """未受理的预约即使时段已过也不被时间直接推进为完成。"""
     appt = _make_appointment(normal_user, service, DAY, "09:00-10:00", status="pending")
     assert auto_complete_due(now=LATE) == 0
-    assert Appointment.query.get(appt.id).status == "pending"
+    assert db.session.get(Appointment, appt.id).status == "pending"
 
 
 def test_auto_complete_skips_cancelled_and_completed(app, normal_user, service):
     cancelled = _make_appointment(normal_user, service, DAY, "09:00-10:00", status="cancelled")
     completed = _make_appointment(normal_user, service, DAY, "10:00-11:00", status="completed")
     auto_complete_due(now=LATE)
-    assert Appointment.query.get(cancelled.id).status == "cancelled"
-    assert Appointment.query.get(completed.id).status == "completed"
+    assert db.session.get(Appointment, cancelled.id).status == "cancelled"
+    assert db.session.get(Appointment, completed.id).status == "completed"
 
 
 def test_auto_complete_is_idempotent(app, normal_user, service):
     appt = _make_appointment(normal_user, service, DAY, "09:00-10:00")
     assert auto_complete_due(now=LATE) == 1
     assert auto_complete_due(now=LATE) == 0
-    assert Appointment.query.get(appt.id).status == "completed"
+    assert db.session.get(Appointment, appt.id).status == "completed"
 
 
 def test_auto_complete_past_date(app, normal_user, service):
     appt = _make_appointment(normal_user, service, DAY - timedelta(days=3), "09:00-10:00")
     assert auto_complete_due(now=LATE) == 1
-    assert Appointment.query.get(appt.id).status == "completed"
+    assert db.session.get(Appointment, appt.id).status == "completed"
 
 
 def test_auto_complete_user_scope(app, normal_user, service, admin_user):
@@ -141,8 +140,8 @@ def test_auto_complete_user_scope(app, normal_user, service, admin_user):
     mine = _make_appointment(normal_user, service, DAY, "09:00-10:00")
     other = _make_appointment(admin_user, service, DAY, "10:00-11:00")
     assert auto_complete_due(now=LATE, user_id=normal_user.id) == 1
-    assert Appointment.query.get(mine.id).status == "completed"
-    assert Appointment.query.get(other.id).status == "confirmed"
+    assert db.session.get(Appointment, mine.id).status == "completed"
+    assert db.session.get(Appointment, other.id).status == "confirmed"
 
 
 def test_auto_complete_enables_review(app, normal_user, service):
@@ -157,7 +156,7 @@ def test_auto_complete_uses_current_time_by_default(app, normal_user, service):
     """不注入时刻时取系统当前时间：未来日期的预约不会被误办结。"""
     appt = _make_appointment(normal_user, service, date.today() + timedelta(days=3), "09:00-10:00")
     assert auto_complete_due() == 0
-    assert Appointment.query.get(appt.id).status == "confirmed"
+    assert db.session.get(Appointment, appt.id).status == "confirmed"
 
 
 def test_auto_complete_mixed_batch(app, normal_user, service):
@@ -165,8 +164,8 @@ def test_auto_complete_mixed_batch(app, normal_user, service):
     ended = _make_appointment(normal_user, service, DAY, "09:00-10:00")
     future = _make_appointment(normal_user, service, DAY + timedelta(days=1), "09:00-10:00")
     assert auto_complete_due(now=LATE) == 1
-    assert Appointment.query.get(ended.id).status == "completed"
-    assert Appointment.query.get(future.id).status == "confirmed"
+    assert db.session.get(Appointment, ended.id).status == "completed"
+    assert db.session.get(Appointment, future.id).status == "confirmed"
 
 
 # ---------------------------------------------------------------- 角色化导航
@@ -244,7 +243,7 @@ def test_admin_cancel_post_blocked(client, admin_user, service, normal_user):
     _login(client, "admin", "Admin@123")
     resp = client.post(f"/appointments/{appt.id}/cancel")
     assert resp.status_code == 302
-    assert Appointment.query.get(appt.id).status == "confirmed"
+    assert db.session.get(Appointment, appt.id).status == "confirmed"
 
 
 # ---------------------------------------------------------------- 服务层：管理员不可评价
@@ -307,7 +306,7 @@ def test_admin_appointments_page_triggers_auto_complete(client, admin_user, norm
     }))
     _login(client, "admin", "Admin@123")
     body = client.get("/admin/appointments").get_data(as_text=True)
-    assert Appointment.query.get(appt.id).status == "completed"
+    assert db.session.get(Appointment, appt.id).status == "completed"
     assert "自动办结" in body
 
 
@@ -323,8 +322,8 @@ def test_user_mine_page_triggers_own_auto_complete(client, normal_user, admin_us
     }))
     _login(client, "zhangsan", "User@123")
     client.get("/appointments/mine")
-    assert Appointment.query.get(mine.id).status == "completed"
-    assert Appointment.query.get(other.id).status == "confirmed"
+    assert db.session.get(Appointment, mine.id).status == "completed"
+    assert db.session.get(Appointment, other.id).status == "confirmed"
 
 
 # ---------------------------------------------------------------- 后台页面说明

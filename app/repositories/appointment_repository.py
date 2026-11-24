@@ -5,6 +5,7 @@ from sqlalchemy import func, select
 
 from app.extensions import db
 from app.models.appointment import Appointment
+from app.models.feedback import Feedback
 from app.repositories.base import BaseRepository
 
 ACTIVE_STATUSES = ("pending", "confirmed")  # 计入名额占用的状态
@@ -125,3 +126,26 @@ class AppointmentRepository(BaseRepository):
             .select_from(Appointment)
             .where(Appointment.appointment_date == target_date)
         )
+
+    @staticmethod
+    def list_reviewable_by_user(user_id):
+        """列出可评价的预约：已完成且尚未评价。
+
+        原实现先取用户全部预约，再对每条预约单独查 feedback（1 + N 次查询）；
+        改为 NOT EXISTS 子查询后只有 1 次查询，预约越多差距越明显。
+        """
+        has_feedback = (
+            select(Feedback.id)
+            .where(Feedback.appointment_id == Appointment.id)
+            .exists()
+        )
+        stmt = (
+            select(Appointment)
+            .where(
+                Appointment.user_id == user_id,
+                Appointment.status == "completed",
+                ~has_feedback,
+            )
+            .order_by(Appointment.appointment_date.desc(), Appointment.id.desc())
+        )
+        return list(db.session.scalars(stmt))

@@ -3,16 +3,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="便民服务平台：政务服务、生活服务、医疗健康、教育咨询与维修服务的在线查询与预约。">
     <title>{% block title %}便民服务平台{% endblock %}</title>
     <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
+<a class="skip-link" href="#main">跳到主要内容</a>
 <header class="site-header">
     <div class="container header-inner">
         <a class="logo" href="{{ url_for('main.index') }}">便民服务平台</a>
-        <nav class="nav">
+        <nav class="nav" aria-label="主导航">
             {# 角色化导航：管理员是服务/平台提供方，主任务是管理与发布；
                消费者功能（预约、评价）只对普通用户开放，避免角色职责混淆（DEF-010）。 #}
             {% if current_user.is_authenticated and current_user.is_admin %}
@@ -44,11 +46,11 @@
     </div>
 </header>
 
-<main class="container">
-    {# 统一反馈区：操作成功 / 失败 / 警告提示 #}
+<main class="container" id="main">
+    {# 统一反馈区：操作成功 / 失败 / 警告提示；aria-live 让读屏软件播报新提示 #}
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flash-area">
+            <div class="flash-area" aria-live="polite">
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }}">{{ message }}</div>
                 {% endfor %}

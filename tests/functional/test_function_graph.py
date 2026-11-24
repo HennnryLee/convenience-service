@@ -29,7 +29,6 @@
 from datetime import timedelta
 
 import pytest
-
 from app.extensions import db
 from app.models import Appointment
 from app.services.appointment_service import cancel_appointment, change_status

@@ -1,6 +1,7 @@
 """反馈评价服务：评价资格判定与评价提交。"""
-from app.utils.constants import MAX_RATING, MIN_RATING
+from app.repositories.appointment_repository import AppointmentRepository
 from app.repositories.feedback_repository import FeedbackRepository
+from app.utils.constants import MAX_RATING, MIN_RATING
 
 
 def can_review(user, appointment):
@@ -45,9 +46,8 @@ def create_feedback(user, appointment, rating, content=None):
 
 
 def list_reviewable_appointments(user):
-    """列出当前用户可评价的预约（已完成且未评价）。"""
-    return [
-        appt
-        for appt in user.appointments
-        if appt.status == "completed" and not FeedbackRepository.get_by_appointment(appt.id)
-    ]
+    """列出当前用户可评价的预约（已完成且未评价）。
+
+    通过 AppointmentRepository 的 NOT EXISTS 查询一次取回，避免逐条预约查评价。
+    """
+    return AppointmentRepository.list_reviewable_by_user(user.id)

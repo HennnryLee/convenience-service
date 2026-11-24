@@ -13,7 +13,6 @@
 对应到 Python 迭代器即"空序列不进入循环体"，故第 1 组用空串覆盖零次。
 """
 import pytest
-
 from app.services.password_policy import validate_password
 from app.utils.table_driven import PRICE_LADDER, price_level
 

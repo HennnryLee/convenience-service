@@ -6,8 +6,9 @@
   3. 业务函数在合法输入下不违约（契约不改变正常行为）；
   4. 业务函数在调用方违约时立即失败（fail-fast，而不是返回错误数据）。
 """
-import pytest
+from datetime import date
 
+import pytest
 from app.services.appointment_rules import (
     AppointmentContext,
     is_valid_slot,
@@ -15,8 +16,14 @@ from app.services.appointment_rules import (
     remaining_capacity,
     validate_new_appointment,
 )
-from app.utils.contracts import ContractViolation, contract, contracts_enabled, ensure, invariant, require
-from datetime import date
+from app.utils.contracts import (
+    ContractViolation,
+    contract,
+    contracts_enabled,
+    ensure,
+    invariant,
+    require,
+)
 
 
 # ------------------------------------------------------------------ 1. 三类断言
@@ -61,6 +68,17 @@ def test_contract_decorator_binds_pre_and_post():
     assert sqrt_like(4) == 4
     with pytest.raises(ContractViolation):
         sqrt_like(-1)
+
+
+def test_contract_decorator_binds_invariant():
+    @contract(inv=lambda a, k, r: r >= 0)
+    def positive(x):
+        """返回值必须非负"""
+        return x
+
+    assert positive(1) == 1
+    with pytest.raises(ContractViolation):
+        positive(-1)
 
 
 # ------------------------------------------------------------------ 2. 业务函数契约

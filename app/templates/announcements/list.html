@@ -11,7 +11,7 @@
 
 {% if pagination and pagination.items %}
     {% for ann in pagination.items %}
-        <div class="card" style="margin-bottom:12px">
+        <div class="card card-spaced">
             <h3><a href="{{ url_for('announcements.detail', announcement_id=ann.id) }}">{{ ann.title }}</a></h3>
             <p class="muted">发布于 {{ ann.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
             <p>{{ ann.summary }}</p>

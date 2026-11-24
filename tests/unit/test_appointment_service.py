@@ -122,3 +122,38 @@ def test_slot_availability_after_booking(app, normal_user, service, tomorrow):
     first = availability[0]
     assert first["remaining"] == service.daily_capacity - 1
     assert first["full"] is False
+
+
+def test_change_status_missing_appointment(app):
+    ok, msg = change_status(None, "confirmed")
+    assert ok is False and "不存在" in msg
+
+
+def test_create_appointment_missing_service(app, normal_user, tomorrow):
+    appointment, errors = create_appointment(
+        normal_user, 99999, tomorrow, "09:00-10:00", "张三", "13800138000"
+    )
+    assert appointment is None
+    assert any("不存在" in e for e in errors)
+
+
+def test_cancel_missing_appointment(app, normal_user):
+    ok, msg = cancel_appointment(None, normal_user)
+    assert ok is False and "不存在" in msg
+
+
+def test_auto_complete_skips_when_transition_rejected(
+    app, normal_user, service, appointment, monkeypatch
+):
+    """状态机拒绝推进时，自动办结不能计数（防御性分支）。"""
+    from datetime import datetime, timedelta
+
+    from app.services import appointment_service
+
+    appointment.status = "confirmed"
+    appointment.appointment_date = (datetime.now() - timedelta(days=1)).date()
+    AppointmentRepository.save(appointment)
+    monkeypatch.setattr(
+        appointment_service, "change_status", lambda *args, **kwargs: (False, "拒绝")
+    )
+    assert appointment_service.auto_complete_due(now=datetime.now()) == 0

@@ -128,7 +128,7 @@ def main():
     out = os.path.join(out_dir, "mutation_report.md")
     with open(out, "w", encoding="utf-8") as f:
         f.write("# 变异测试报告（教材 11.5）\n\n")
-        f.write(f"- 变异算子：关系运算符 / 逻辑运算符 / 逻辑非 / 条件删除 / 边界保护删除 / 消息变异\n")
+        f.write("- 变异算子：关系运算符 / 逻辑运算符 / 逻辑非 / 条件删除 / 边界保护删除 / 消息变异\n")
         f.write(f"- 有效变异体：{len(valid)} 个，杀死 {len(killed)} 个，存活 {len(survived)} 个\n")
         f.write(f"- **变异分数：{score:.1f}%**\n\n")
         f.write("| 编号 | 变异算子 | 变异内容 | 结果 |\n| --- | --- | --- | --- |\n")

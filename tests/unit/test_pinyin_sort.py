@@ -8,7 +8,6 @@
 不再依赖具体数据库的 collation 实现。
 """
 import pytest
-
 from app.extensions import db
 from app.models import ServiceItem
 from app.repositories.service_repository import ServiceRepository

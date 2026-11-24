@@ -1,0 +1,5 @@
+# 开发/测试/质量门禁依赖（在 requirements.txt 基础上增加静态检查工具）
+-r requirements.txt
+
+# 代码风格与静态检查（CI 与本地 pre-commit 共用）
+ruff>=0.6

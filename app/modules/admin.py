@@ -1,6 +1,4 @@
 """后台管理模块（蓝图 admin）：服务管理、用户管理、预约管理、公告发布。"""
-from datetime import date
-
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 
@@ -14,7 +12,10 @@ from app.repositories import (
     UserRepository,
 )
 from app.services.appointment_service import auto_complete_due, change_status
+from app.services.dashboard_service import get_dashboard_stats
+from app.utils.constants import APPOINTMENT_STATUS_TEXT
 from app.utils.decorators import admin_required
+from app.utils.pagination import parse_choice, parse_page
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -46,21 +47,13 @@ def protect():
 
 @admin_bp.route("/")
 def dashboard():
-    stats = {
-        "users": UserRepository.count(),
-        "services": ServiceRepository.count_by_status("online"),
-        "appointments": AppointmentRepository.count_by_status(),
-        "pending": AppointmentRepository.count_by_status("pending"),
-        "today": AppointmentRepository.count_by_date(date.today()),
-        "feedbacks": FeedbackRepository.count_all(),
-    }
-    return render_template("admin/dashboard.html", stats=stats)
+    return render_template("admin/dashboard.html", stats=get_dashboard_stats())
 
 
 # ---------------------------------------------------------------- 服务管理
 @admin_bp.route("/services")
 def services():
-    page = request.args.get("page", 1, type=int)
+    page = parse_page(request.args.get("page"))
     pagination = ServiceRepository.search(only_online=False, page=page, per_page=PER_PAGE)
     return render_template("admin/services.html", pagination=pagination)
 
@@ -76,13 +69,14 @@ def edit_service(service_id=None):
     form = ServiceForm(obj=service)
     if form.validate_on_submit():
         payload = _build_service_payload(form)
+        exclude_id = service.id if service else None
+        if ServiceRepository.name_conflict(payload["name"], exclude_id=exclude_id):
+            flash("同名服务已存在。", "danger")
+            return render_template("admin/service_form.html", form=form, service=service)
         if service:
             ServiceRepository.update(service, **payload)
             flash("服务信息已更新。", "success")
         else:
-            if ServiceRepository.get_by_name(payload["name"]):
-                flash("同名服务已存在。", "danger")
-                return render_template("admin/service_form.html", form=form, service=service)
             ServiceRepository.create(**payload)
             flash("服务已创建。", "success")
         return redirect(url_for("admin.services"))
@@ -106,7 +100,7 @@ def toggle_service(service_id):
 def users():
     form = UserSearchForm(request.args, meta={"csrf": False})
     keyword = (form.keyword.data or "").strip() or None
-    page = request.args.get("page", 1, type=int)
+    page = parse_page(request.args.get("page"))
     pagination = UserRepository.search(keyword=keyword, page=page, per_page=PER_PAGE)
     return render_template("admin/users.html", pagination=pagination, form=form)
 
@@ -131,8 +125,8 @@ def appointments():
     completed_count = auto_complete_due()
     if completed_count:
         flash(f"已按服务时段自动办结 {completed_count} 条到期预约（已确认 → 已完成）。", "info")
-    status = request.args.get("status") or None
-    page = request.args.get("page", 1, type=int)
+    status = parse_choice(request.args.get("status"), APPOINTMENT_STATUS_TEXT)
+    page = parse_page(request.args.get("page"))
     pagination = AppointmentRepository.list_all(status=status, page=page, per_page=PER_PAGE)
     return render_template("admin/appointments.html", pagination=pagination, status=status)
 
@@ -155,7 +149,7 @@ def update_appointment_status(appointment_id):
 @admin_bp.route("/feedbacks")
 def feedbacks():
     """管理员以服务提供方身份查看消费者的反馈，页面不提供任何提交/修改入口。"""
-    page = request.args.get("page", 1, type=int)
+    page = parse_page(request.args.get("page"))
     pagination = FeedbackRepository.list_all(page=page, per_page=PER_PAGE)
     return render_template("admin/feedbacks.html", pagination=pagination)
 

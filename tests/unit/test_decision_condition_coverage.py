@@ -15,7 +15,6 @@ D3: 不含空格                           （条件 c_space）
 D4: password != username              （条件 c_diff）
 """
 import pytest
-
 from app.services.password_policy import validate_password
 
 DECISIONS = ("D1", "D2", "D3", "D4")

@@ -51,15 +51,16 @@ def register_user(username, email, password, phone=None, real_name=None, role="u
 
 
 def authenticate(login, password):
-    """登录校验。
+    """校验登录凭据。
 
-    后置条件：成功返回 User 对象，失败返回 None。
+    后置条件：用户名/邮箱存在且密码匹配时返回 User，否则返回 None。
+    注意：本函数只做**身份认证**，不判断账号是否启用；
+    "禁用账号"属于授权策略，由视图层在认证通过后给出明确提示，
+    这样既不会向攻击者泄露账号是否存在，也能让真实用户知道该联系管理员。
     安全考虑：无论用户不存在还是密码错误，对外统一提示，避免账号枚举。
     """
     user = UserRepository.get_by_login(login)
     if user is None or not user.check_password(password):
-        return None
-    if not user.is_active:
         return None
     return user
 

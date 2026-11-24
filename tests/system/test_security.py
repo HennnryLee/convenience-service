@@ -104,7 +104,7 @@ def test_horizontal_privilege_escalation_blocked(client, normal_user, service, a
     client.post("/auth/login", data={"login": "attacker", "password": "User@123"})
     resp = client.post(f"/appointments/{appointment.id}/cancel", follow_redirects=True)
     assert "只能取消本人的预约".encode() in resp.data
-    assert Appointment.query.get(appointment.id).status == "pending"
+    assert db.session.get(Appointment, appointment.id).status == "pending"
 
 
 def test_vertical_privilege_escalation_blocked(client, normal_user):
@@ -118,7 +118,7 @@ def test_admin_cannot_disable_self(client, admin_user):
     client.post("/auth/login", data={"login": "admin", "password": "Admin@123"})
     resp = client.post(f"/admin/users/{admin_user.id}/toggle", follow_redirects=True)
     assert "不能禁用当前登录的管理员账号".encode() in resp.data
-    assert User.query.get(admin_user.id).is_active is True
+    assert db.session.get(User, admin_user.id).is_active is True
 
 
 def test_open_redirect_protected(client, normal_user):

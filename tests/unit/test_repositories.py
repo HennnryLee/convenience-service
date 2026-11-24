@@ -3,10 +3,8 @@
 被测：UserRepository / ServiceRepository / AppointmentRepository /
       AnnouncementRepository / FeedbackRepository
 """
-from datetime import date, timedelta
 
 from app.extensions import db
-from app.models import Appointment, ServiceItem, User
 from app.repositories import (
     AnnouncementRepository,
     AppointmentRepository,
@@ -111,7 +109,7 @@ def test_count_active_ignores_cancelled(app, normal_user, service, tomorrow):
     a1 = AppointmentRepository.create(
         user_id=normal_user.id, service_id=service.id, appointment_date=tomorrow,
         time_slot="09:00-10:00", contact_name="张三", contact_phone="13800138000")
-    a2 = AppointmentRepository.create(
+    AppointmentRepository.create(
         user_id=normal_user.id, service_id=service.id, appointment_date=tomorrow,
         time_slot="09:00-10:00", contact_name="张三", contact_phone="13800138000", status="cancelled")
     assert AppointmentRepository.count_active(service.id, tomorrow, "09:00-10:00") == 1
