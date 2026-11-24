@@ -1,9 +1,9 @@
-........................................................................ [ 19%]
-........................................................................ [ 39%]
-........................................................................ [ 59%]
-........................................................................ [ 79%]
-........................................................................ [ 99%]
-...                                                                      [100%]
+........................................................................ [ 18%]
+........................................................................ [ 37%]
+........................................................................ [ 56%]
+........................................................................ [ 75%]
+........................................................................ [ 94%]
+......................                                                   [100%]
 =============================== tests coverage ================================
 ______________ coverage: platform win32, python 3.12.10-final-0 _______________
 
@@ -22,7 +22,7 @@ app\models\__init__.py                            6      0      0      0   100%
 app\models\announcement.py                       19      1      0      0    95%   28
 app\models\appointment.py                        31      2      0      0    94%   50, 67
 app\models\feedback.py                           21      1      0      0    95%   41
-app\models\service.py                            28      1      2      0    97%   58
+app\models\service.py                            35      1      2      0    97%   75
 app\models\user.py                               33      2      2      1    91%   56, 68
 app\modules\__init__.py                           0      0      0      0   100%
 app\modules\admin.py                            106     12     22      8    84%   73-74, 80-81, 84-85, 89, 96-97, 118, 145, 176
@@ -37,7 +37,7 @@ app\repositories\announcement_repository.py      23      0      4      1    96% 
 app\repositories\appointment_repository.py       52      2      6      0    97%   91-96
 app\repositories\base.py                         33      1      8      3    90%   23->25, 41, 48->50
 app\repositories\feedback_repository.py          27      0      0      0   100%
-app\repositories\service_repository.py           41      1     10      2    94%   50, 58->60
+app\repositories\service_repository.py           41      1     10      2    94%   54, 62->64
 app\repositories\user_repository.py              48      1      8      1    96%   69
 app\services\__init__.py                          0      0      0      0   100%
 app\services\appointment_rules.py                88      0     24      0   100%
@@ -50,10 +50,11 @@ app\utils\__init__.py                             0      0      0      0   100%
 app\utils\constants.py                           14      0      0      0   100%
 app\utils\contracts.py                           33      1     12      3    91%   72->74, 75->77, 78
 app\utils\decorators.py                          18      0      4      0   100%
+app\utils\pinyin.py                              13      0      6      0   100%
 app\utils\table_driven.py                        24      0      8      0   100%
 app\utils\validators.py                          17      2      4      2    81%   29, 32
 -----------------------------------------------------------------------------------------
-TOTAL                                          1249     67    266     39    93%
+TOTAL                                          1269     67    272     39    93%
 Coverage HTML written to dir reports/coverage_html
 Coverage XML written to file reports/coverage.xml
-363 passed in 55.58s
+382 passed in 50.63s

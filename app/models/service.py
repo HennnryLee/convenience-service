@@ -4,7 +4,10 @@
 """
 from datetime import datetime
 
+from sqlalchemy.orm import validates
+
 from app.extensions import db
+from app.utils.pinyin import to_pinyin_key
 
 
 class ServiceItem(db.Model):
@@ -12,6 +15,7 @@ class ServiceItem(db.Model):
 
     属性不变量：
         - name 全局唯一且非空；
+        - name_pinyin 恒等于 to_pinyin_key(name)，由写入钩子自动维护；
         - category ∈ SERVICE_CATEGORIES 的键（表单层用 SelectField 收敛取值）；
         - daily_capacity > 0；
         - price >= 0；
@@ -27,6 +31,9 @@ class ServiceItem(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), unique=True, nullable=False, index=True)
+    # 拼音排序键：让"按名称"排出用户直觉的 A→Z，而不是 UTF-8 字节序。
+    # 冗余列，由下面的 @validates 自动维护，调用方无需关心。
+    name_pinyin = db.Column(db.String(255), nullable=False, default="", index=True)
     category = db.Column(db.String(20), nullable=False, default="life", index=True)
     description = db.Column(db.Text)
     address = db.Column(db.String(200))
@@ -40,6 +47,16 @@ class ServiceItem(db.Model):
         "Appointment", back_populates="service", cascade="all, delete-orphan", lazy="dynamic"
     )
     feedbacks = db.relationship("Feedback", back_populates="service", lazy="dynamic")
+
+    @validates("name")
+    def _sync_name_pinyin(self, key, value):
+        """名称被赋值/修改时同步排序键。
+
+        放在实体层而不是视图层，是为了让 seed、后台新建、后台编辑、测试造数
+        等所有入口都自动生效 —— 避免"某条路径漏算拼音"导致排序静默退化。
+        """
+        self.name_pinyin = to_pinyin_key(value)
+        return value
 
     # ------------------------------------------------------------------ 行为
     @property

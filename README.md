@@ -20,7 +20,7 @@ python run.py
 
 ## 运行测试
 ```bash
-pytest                                           # 全部测试（363 条）
+pytest                                           # 全部测试（382 条）
 pytest tests/unit                                # 单元测试
 pytest tests/functional                          # 功能测试（黑盒）
 pytest tests/integration                         # 集成测试

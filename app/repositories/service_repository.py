@@ -8,7 +8,11 @@ from app.repositories.base import BaseRepository
 
 # 排序方式 -> 排序表达式工厂（表驱动：新增排序只改这张表）
 SORT_EXPRESSIONS = {
-    "name": lambda: ServiceItem.name.asc(),
+    # 不直接用 name.asc()：SQLite 的 BINARY 排序规则按 UTF-8 字节序比较，
+    # 结果是 Unicode 码点序（住 → 儿 → 家 → 成 …），不是拼音也不是笔画，
+    # 普通用户会认为排错了。name_pinyin 在写入时由模型自动生成，此处只做
+    # 普通字符串比较，换数据库也不会改变顺序。
+    "name": lambda: ServiceItem.name_pinyin.asc(),
     "price_asc": lambda: ServiceItem.price.asc(),
     "price_desc": lambda: ServiceItem.price.desc(),
     "popular": lambda: func.count(Appointment.id).desc(),
