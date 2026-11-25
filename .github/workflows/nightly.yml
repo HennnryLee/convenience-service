@@ -63,18 +63,20 @@ jobs:
           python -m pip install -r requirements-dev.txt
       - name: 初始化临时演示库
         env:
-          FLASK_CONFIG: production
+          FLASK_CONFIG: development
           SECRET_KEY: nightly-only-secret-key-0123456789
-          DATABASE_URL: sqlite:///./instance/nightly.db
+          # 必须是绝对路径：Flask-SQLAlchemy 会把相对 SQLite 路径解析到实例目录，
+          # 在干净 checkout 中会变成 instance/instance/nightly.db 而无法创建。
+          DATABASE_URL: sqlite:////tmp/convenience-nightly.db
         run: python run.py --init-db --seed
       - name: 启动服务
         env:
-          FLASK_CONFIG: production
+          FLASK_CONFIG: development
           SECRET_KEY: nightly-only-secret-key-0123456789
-          DATABASE_URL: sqlite:///./instance/nightly.db
+          DATABASE_URL: sqlite:////tmp/convenience-nightly.db
         run: |
           mkdir -p reports
-          nohup python run.py --config production --port 5050 > reports/nightly_server.log 2>&1 &
+          nohup python run.py --config development --no-debug --port 5050 > reports/nightly_server.log 2>&1 &
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:5050/healthz; then break; fi
             sleep 1

@@ -6,6 +6,7 @@
     python run.py --seed                           # 灌演示数据（幂等，同名记录自动跳过）
     python run.py --init-db --seed                 # 首次部署：建表 + 灌演示数据
     python run.py --init-db --seed --serve         # 初始化后继续启动服务器
+    python run.py --config development --no-debug  # CI 冒烟：不开调试/自动重载
     python run.py --init-db --seed --force-reset   # 危险：清空并重建（数据不可恢复）
 
 安全约定（2026-11-23 修订）：
@@ -37,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=5000)
+    parser.add_argument(
+        "--no-debug",
+        action="store_true",
+        help="关闭调试与自动重载（CI 冒烟/无交互环境使用）",
+    )
     parser.add_argument("--init-db", action="store_true", help="建表（幂等，不删除已有数据）")
     parser.add_argument("--seed", action="store_true", help="灌演示数据（幂等）")
     parser.add_argument("--serve", action="store_true", help="初始化后继续启动服务器")
@@ -92,7 +98,11 @@ def main(argv=None) -> int:
         if not args.serve:
             return 0
 
-    app.run(host=args.host, port=args.port, debug=app.config.get("DEBUG", False))
+    app.run(
+        host=args.host,
+        port=args.port,
+        debug=app.config.get("DEBUG", False) and not args.no_debug,
+    )
     return 0
 
 

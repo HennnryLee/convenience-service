@@ -3,6 +3,16 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循语义化版本。课程实验阶段的提交同时记录在 `docs/11-交付清单.md`。
 
+## [1.2.4] - 2026-11-25
+
+### 修复
+- **nightly 冒烟任务启动失败**：GitHub Actions 干净 checkout 中，相对 SQLite 路径
+  `sqlite:///./instance/nightly.db` 会被 Flask-SQLAlchemy 解析到实例目录下再套一层
+  `instance/`，导致 `unable to open database file`。改用绝对路径
+  `sqlite:////tmp/convenience-nightly.db`。
+- nightly 冒烟改用 `development` 配置并新增 `run.py --no-debug`：避免调试重载，
+  同时保证 HTTP 下登录会话 Cookie 可用（production 的 Secure Cookie 会让 Locust 登录失效）。
+
 ## [1.2.3] - 2026-11-24
 
 ### 修复
