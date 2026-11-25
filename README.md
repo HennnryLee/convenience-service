@@ -54,7 +54,7 @@ python scripts/check_migration.py                # 在临时库上演练 Alembic
 | ruff / 静态分析 | 0 问题 / 59 文件 0 问题 |
 | 插装 / 变异 | 27/27 = 100% / 12/12 = 100% |
 | CI | GitHub Actions，Python 3.10/3.12 双版本；ruff + 静态分析 + 迁移演练 + 分支覆盖率 |
-| 生产就绪 | `migrations/` 版本化迁移、`/healthz` 健康检查、`audit_logs` 审计与归档、`deploy/` 模板渲染、`.github/workflows/nightly.yml` 夜间巡检 |
+| 生产就绪 | `migrations/` 版本化迁移、`/healthz` 健康检查、`audit_logs` 审计与归档、`deploy/` 模板渲染 |
 
 ## 项目结构（分层）
 

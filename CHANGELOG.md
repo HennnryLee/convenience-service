@@ -3,6 +3,13 @@
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循语义化版本。课程实验阶段的提交同时记录在 `docs/11-交付清单.md`。
 
+## [1.2.5] - 2026-11-25
+
+### 移除
+- 删除 `.github/workflows/nightly.yml` 定时任务；课程交付保留 push 触发的
+  `quality-gate`，Locust/兼容性脚本改为按需手工执行。
+- 回退仅服务于 nightly 的 `run.py --no-debug` 参数，保持启动入口简单。
+
 ## [1.2.4] - 2026-11-25
 
 ### 修复

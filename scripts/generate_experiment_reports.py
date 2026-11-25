@@ -555,8 +555,8 @@ CONSTRUCT.append((
                "9 条功能测试 + 4 条仓储测试；审计失败降级不阻断主业务"],
               ["生产部署", "`deploy/gunicorn.conf.py`、`nginx.conf.template`、`convenience.service.template`、"
                           "`render_configs.py`、`requirements-prod.txt`；`docs/16` 给出发布/回滚清单", "按环境渲染后发布"],
-              ["运维增强", "审计归档（先导出后删除）、夜间任务（迁移/回归/Locust/兼容性）、"
-                          "`/healthz` 探针", "归档脚本 + nightly workflow + 健康检查"],
+              ["运维增强", "审计归档（先导出后删除）、`/healthz` 探针",
+               "归档脚本 + 健康检查"],
               ["健康检查", "`GET /healthz`：数据库可用 200，不可用 503", "2 条系统测试"],
               ["DEF-001", "服务/用户/公告搜索统一 `contains(autoescape=True)`，`%`/`_` 按字面量匹配",
                "`%`、`_`、`\\` 回归用例；缺陷状态 Open → Close"]])
@@ -999,8 +999,8 @@ TESTS.append((
               ["静态门禁", "ruff（E/F/W/I/B）+ scripts/static_check.py + pre-commit", "ruff 0、静态分析 0"],
               ["迁移门禁", "scripts/check_migration.py 在临时库执行 `flask db upgrade`，校验 7 张表",
                "CI 每次提交验证迁移链"],
-              ["CI/CD", "GitHub Actions：安装依赖 → ruff → 静态分析 → 迁移演练 → pytest 覆盖率 → 上传报告；"
-                       "夜间任务追加 Locust 冒烟与兼容性", "提交即验证，每日巡检"]])
+              ["CI/CD", "GitHub Actions：安装依赖 → ruff → 静态分析 → 迁移演练 → pytest 覆盖率 → 上传报告",
+               "提交即验证；Locust/兼容性按需手工执行"]])
         ,
         ("p", "属性测试用固定种子在 500 组随机输入上验证 remaining_capacity、时段起止、价格档位与分页解析的不变量，"
               "避免示例测试的取样偏差；错误页/日志/安全头/审计/健康检查用例则把「非功能需求」变成了可回归的断言。"
